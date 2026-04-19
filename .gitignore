@@ -60,3 +60,18 @@ Thumbs.db
 
 # Kimi
 .kimi/skills/excalidraw-diagram/references/.venv/
+
+# Temporary files
+temp_*.py
+
+# Large archives
+*.zip
+
+# Videos and media
+Videos/
+
+# Data directories
+Data/
+
+# Documents in root (deliverables)
+/INFORMEDETALLADO_*.docx

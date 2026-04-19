@@ -1,0 +1,232 @@
+========================================================================================================================
+COMPARACION: DATOS CRUDOS vs DATOS COLUMNAS (WIDE FORMAT)
+========================================================================================================================
+Estacion                            Formato      Inicio         Fin            Registros    Rango
+------------------------------------------------------------------------------------------------------------------------
+ARMENIA                             CRUDOS       1982-05-14     2025-10-15     13183        44 años
+ARMENIA                             COLUMNAS     ERROR
+------------------------------------------------------------------------------------------------------------------------
+BARBOSA                             CRUDOS       ERROR
+BARBOSA                             COLUMNAS     1973-10-01     2024-12-20     14350        52 años
+------------------------------------------------------------------------------------------------------------------------
+CALAMAR                             CRUDOS       1980-07-26     2026-02-09     16522        47 años
+CALAMAR                             COLUMNAS     1967-02-01     2026-02-09     21381        60 años
+------------------------------------------------------------------------------------------------------------------------
+COYONGAL                            CRUDOS       1980-01-01     2026-02-09     15121        47 años
+COYONGAL                            COLUMNAS     1975-03-01     2026-02-09     15726        52 años
+------------------------------------------------------------------------------------------------------------------------
+EL BANCO - AUT                      CRUDOS       1984-02-25     2026-02-09     15102        43 años
+EL BANCO - AUT                      COLUMNAS     1972-10-01     2026-02-09     18744        55 años
+------------------------------------------------------------------------------------------------------------------------
+EL CONTENTO                         CRUDOS       2003-03-12     2026-01-17     7013         24 años
+EL CONTENTO                         COLUMNAS     1974-09-01     2026-01-17     13447        53 años
+------------------------------------------------------------------------------------------------------------------------
+GAMARRA - AUT                       CRUDOS       2013-01-01     2026-01-18     4417         14 años
+GAMARRA - AUT                       COLUMNAS     ERROR
+------------------------------------------------------------------------------------------------------------------------
+LAS AGUADAS                         CRUDOS       1979-10-19     2025-08-31     16577        47 años
+LAS AGUADAS                         COLUMNAS     1973-04-01     2025-08-31     18749        53 años
+------------------------------------------------------------------------------------------------------------------------
+LAS PALOMAS                         CRUDOS       1981-03-16     2025-06-30     14088        45 años
+LAS PALOMAS                         COLUMNAS     1973-08-01     2025-06-30     15688        53 años
+------------------------------------------------------------------------------------------------------------------------
+LA GLORIA23217060                   CRUDOS       2011-02-25     2026-01-18     4562         16 años
+LA GLORIA23217060                   COLUMNAS     1991-04-21     2026-01-18     11156        36 años
+------------------------------------------------------------------------------------------------------------------------
+MAGANGUE                            CRUDOS       1979-10-06     2025-12-30     14751        47 años
+MAGANGUE                            COLUMNAS     ERROR
+------------------------------------------------------------------------------------------------------------------------
+PENONCITO                           CRUDOS       1983-04-01     2025-08-31     14340        43 años
+PENONCITO                           COLUMNAS     ERROR
+------------------------------------------------------------------------------------------------------------------------
+PLATO MAGDALENA AUT                 CRUDOS       1979-03-31     2025-12-11     15375        47 años
+PLATO MAGDALENA AUT                 COLUMNAS     1976-06-01     2025-12-11     16142        50 años
+------------------------------------------------------------------------------------------------------------------------
+PUERTO WILCHES                      CRUDOS       2009-07-24     2025-09-11     5633         17 años
+PUERTO WILCHES                      COLUMNAS     2003-05-07     2025-09-11     7806         23 años
+------------------------------------------------------------------------------------------------------------------------
+RIO NUEVO                           CRUDOS       1979-11-01     2025-10-23     12940        47 años
+RIO NUEVO                           COLUMNAS     1974-10-01     2025-10-23     14209        52 años
+------------------------------------------------------------------------------------------------------------------------
+SAN PEDRITO - AUT                   CRUDOS       2004-12-04     2026-02-09     7658         23 años
+SAN PEDRITO - AUT                   COLUMNAS     ERROR
+------------------------------------------------------------------------------------------------------------------------
+SITIO NUEVO                         CRUDOS       2003-07-14     2026-01-18     7396         24 años
+SITIO NUEVO                         COLUMNAS     ERROR
+------------------------------------------------------------------------------------------------------------------------
+TENERIFE                            CRUDOS       1979-04-01     2026-02-09     12614        48 años
+TENERIFE                            COLUMNAS     1973-10-01     2026-02-09     14179        54 años
+------------------------------------------------------------------------------------------------------------------------
+
+========================================================================================================================
+ANALISIS DE DISCREPANCIAS CRUDOS vs COLUMNAS
+========================================================================================================================
+
+[+] ARMENIA
+--------------------------------------------------------------------------------
+   [OK] CRUDOS: 13183 registros desde 1982-05-14
+   [!] COLUMNAS: Error
+
+[+] BARBOSA
+--------------------------------------------------------------------------------
+   [!] CRUDOS: Error
+   [OK] COLUMNAS: 14350 registros desde 1973-10-01
+
+[+] CALAMAR
+--------------------------------------------------------------------------------
+   [DIF] INICIO: Columnas tiene 13.5 años mas de datos historicos
+              Columnas: 1967-02-01 | Crudos: 1980-07-26
+   [OK] FIN: Ambos coinciden (2026-02-09)
+   [DIF] REGISTROS: Diferencia de -4859 registros (-22.7%)
+                 Crudos: 16522 | Columnas: 21381
+   [DIF] AÑOS: Crudos=47 años, Columnas=60 años
+              Columnas tiene 13 años adicionales
+
+[+] COYONGAL
+--------------------------------------------------------------------------------
+   [DIF] INICIO: Columnas tiene 4.8 años mas de datos historicos
+              Columnas: 1975-03-01 | Crudos: 1980-01-01
+   [OK] FIN: Ambos coinciden (2026-02-09)
+   [DIF] REGISTROS: Diferencia de -605 registros (-3.8%)
+                 Crudos: 15121 | Columnas: 15726
+   [DIF] AÑOS: Crudos=47 años, Columnas=52 años
+              Columnas tiene 5 años adicionales
+
+[+] EL BANCO - AUT
+--------------------------------------------------------------------------------
+   [DIF] INICIO: Columnas tiene 11.4 años mas de datos historicos
+              Columnas: 1972-10-01 | Crudos: 1984-02-25
+   [OK] FIN: Ambos coinciden (2026-02-09)
+   [DIF] REGISTROS: Diferencia de -3642 registros (-19.4%)
+                 Crudos: 15102 | Columnas: 18744
+   [DIF] AÑOS: Crudos=43 años, Columnas=55 años
+              Columnas tiene 12 años adicionales
+
+[+] EL CONTENTO
+--------------------------------------------------------------------------------
+   [DIF] INICIO: Columnas tiene 28.5 años mas de datos historicos
+              Columnas: 1974-09-01 | Crudos: 2003-03-12
+   [OK] FIN: Ambos coinciden (2026-01-17)
+   [DIF] REGISTROS: Diferencia de -6434 registros (-47.8%)
+                 Crudos: 7013 | Columnas: 13447
+   [DIF] AÑOS: Crudos=24 años, Columnas=53 años
+              Columnas tiene 29 años adicionales
+
+[+] GAMARRA - AUT
+--------------------------------------------------------------------------------
+   [OK] CRUDOS: 4417 registros desde 2013-01-01
+   [!] COLUMNAS: Error
+
+[+] LAS AGUADAS
+--------------------------------------------------------------------------------
+   [DIF] INICIO: Columnas tiene 6.5 años mas de datos historicos
+              Columnas: 1973-04-01 | Crudos: 1979-10-19
+   [OK] FIN: Ambos coinciden (2025-08-31)
+   [DIF] REGISTROS: Diferencia de -2172 registros (-11.6%)
+                 Crudos: 16577 | Columnas: 18749
+   [DIF] AÑOS: Crudos=47 años, Columnas=53 años
+              Columnas tiene 6 años adicionales
+
+[+] LAS PALOMAS
+--------------------------------------------------------------------------------
+   [DIF] INICIO: Columnas tiene 7.6 años mas de datos historicos
+              Columnas: 1973-08-01 | Crudos: 1981-03-16
+   [OK] FIN: Ambos coinciden (2025-06-30)
+   [DIF] REGISTROS: Diferencia de -1600 registros (-10.2%)
+                 Crudos: 14088 | Columnas: 15688
+   [DIF] AÑOS: Crudos=45 años, Columnas=53 años
+              Columnas tiene 8 años adicionales
+
+[+] LA GLORIA23217060
+--------------------------------------------------------------------------------
+   [DIF] INICIO: Columnas tiene 19.8 años mas de datos historicos
+              Columnas: 1991-04-21 | Crudos: 2011-02-25
+   [OK] FIN: Ambos coinciden (2026-01-18)
+   [DIF] REGISTROS: Diferencia de -6594 registros (-59.1%)
+                 Crudos: 4562 | Columnas: 11156
+   [DIF] AÑOS: Crudos=16 años, Columnas=36 años
+              Columnas tiene 20 años adicionales
+
+[+] MAGANGUE
+--------------------------------------------------------------------------------
+   [OK] CRUDOS: 14751 registros desde 1979-10-06
+   [!] COLUMNAS: Error
+
+[+] PENONCITO
+--------------------------------------------------------------------------------
+   [OK] CRUDOS: 14340 registros desde 1983-04-01
+   [!] COLUMNAS: Error
+
+[+] PLATO MAGDALENA AUT
+--------------------------------------------------------------------------------
+   [DIF] INICIO: Columnas tiene 2.8 años mas de datos historicos
+              Columnas: 1976-06-01 | Crudos: 1979-03-31
+   [OK] FIN: Ambos coinciden (2025-12-11)
+   [DIF] REGISTROS: Diferencia de -767 registros (-4.8%)
+                 Crudos: 15375 | Columnas: 16142
+   [DIF] AÑOS: Crudos=47 años, Columnas=50 años
+              Columnas tiene 3 años adicionales
+
+[+] PUERTO WILCHES
+--------------------------------------------------------------------------------
+   [DIF] INICIO: Columnas tiene 6.2 años mas de datos historicos
+              Columnas: 2003-05-07 | Crudos: 2009-07-24
+   [OK] FIN: Ambos coinciden (2025-09-11)
+   [DIF] REGISTROS: Diferencia de -2173 registros (-27.8%)
+                 Crudos: 5633 | Columnas: 7806
+   [DIF] AÑOS: Crudos=17 años, Columnas=23 años
+              Columnas tiene 6 años adicionales
+
+[+] RIO NUEVO
+--------------------------------------------------------------------------------
+   [DIF] INICIO: Columnas tiene 5.1 años mas de datos historicos
+              Columnas: 1974-10-01 | Crudos: 1979-11-01
+   [OK] FIN: Ambos coinciden (2025-10-23)
+   [DIF] REGISTROS: Diferencia de -1269 registros (-8.9%)
+                 Crudos: 12940 | Columnas: 14209
+   [DIF] AÑOS: Crudos=47 años, Columnas=52 años
+              Columnas tiene 5 años adicionales
+
+[+] SAN PEDRITO - AUT
+--------------------------------------------------------------------------------
+   [OK] CRUDOS: 7658 registros desde 2004-12-04
+   [!] COLUMNAS: Error
+
+[+] SITIO NUEVO
+--------------------------------------------------------------------------------
+   [OK] CRUDOS: 7396 registros desde 2003-07-14
+   [!] COLUMNAS: Error
+
+[+] TENERIFE
+--------------------------------------------------------------------------------
+   [DIF] INICIO: Columnas tiene 5.5 años mas de datos historicos
+              Columnas: 1973-10-01 | Crudos: 1979-04-01
+   [OK] FIN: Ambos coinciden (2026-02-09)
+   [DIF] REGISTROS: Diferencia de -1565 registros (-11.0%)
+                 Crudos: 12614 | Columnas: 14179
+   [DIF] AÑOS: Crudos=48 años, Columnas=54 años
+              Columnas tiene 6 años adicionales
+
+========================================================================================================================
+RESUMEN GENERAL DE HALLAZGOS
+========================================================================================================================
+
+[ESTADISTICAS]
+  Total estaciones: 18
+  Datos identicos: 0
+  Con diferencias: 11
+
+[HALLAZGO CRITICO] Estaciones donde COLUMNAS tiene mas datos historicos:
+    - CALAMAR: 13.5 años adicionales
+    - COYONGAL: 4.8 años adicionales
+    - EL BANCO - AUT: 11.4 años adicionales
+    - EL CONTENTO: 28.5 años adicionales
+    - LAS AGUADAS: 6.5 años adicionales
+    - LAS PALOMAS: 7.6 años adicionales
+    - LA GLORIA23217060: 19.8 años adicionales
+    - PLATO MAGDALENA AUT: 2.8 años adicionales
+    - PUERTO WILCHES: 6.2 años adicionales
+    - RIO NUEVO: 5.1 años adicionales
+    - TENERIFE: 5.5 años adicionales
+
+========================================================================================================================

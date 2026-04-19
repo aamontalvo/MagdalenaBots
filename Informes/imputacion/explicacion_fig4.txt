@@ -1,0 +1,23 @@
+=== COMO SE CALCULA LA FIGURA 4 (Curvas de Excedidos) ===
+
+Paso 1: Agrupar por dia del anio (1-366)
+Paso 2: Para cada dia, calcular percentiles usando ventana de +-15 dias
+Paso 3: Conectar los puntos (suavizado opcional)
+
+Ejemplo: Dia 100 (aprox 10 de abril)
+Ventana: +-15 dias alrededor del dia 100
+Datos disponibles en ventana: 1823
+
+Percentiles calculados:
+  MAX: 6.74 m
+  P95: 5.75 m
+  P75: 4.65 m
+  P50: 3.56 m
+  P25: 2.81 m
+  P05: 1.77 m
+  MIN: 1.35 m
+
+NOTA sobre suavizado:
+El suavizado (scipy.make_interp_spline) solo conecta los puntos
+calculados para hacer la curva mas continua visualmente.
+NO es obligatorio - se puede graficar sin suavizado.

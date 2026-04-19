@@ -1,0 +1,280 @@
+{
+  "name": "MagdalenaBot Agent + CSV",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "8fd5fe3c-6e9b-49d6-a1d7-b877d31761ee",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2200,
+        -400
+      ],
+      "id": "webhook-entry",
+      "name": "Webhook Entry",
+      "webhookId": "8fd5fe3c-6e9b-49d6-a1d7-b877d31761ee"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse webhook input\nconst body = $input.first().json.body || {};\n\nconst message = body.last_input_text || body.message || body.text || body.query;\nconst sessionId = body.id || body.session_id || body.user_id || 'default';\nconst email = body.email || body.user_email;\nconst outputFormat = body.format || 'csv'; // 'csv' or 'text'\n\n// Detect analysis type from message\nconst msg = message.toLowerCase();\nlet analysisType = 'query';\nif (msg.includes('probabilidad') || msg.includes('mensual')) analysisType = 'monthly_probability';\nif (msg.includes('excedencia') || msg.includes('frecuencia')) analysisType = 'exceedance_frequency';\nif (msg.includes('duracion') || msg.includes('persistencia')) analysisType = 'duration_curve';\nif (msg.includes('completo') || msg.includes('todo')) analysisType = 'complete';\n\n// Detect station\nlet stationId = null;\nlet stationName = null;\nif (msg.includes('calamar')) { stationId = '011375ab-c1be-4fa4-aa97-be2f39483b34'; stationName = 'Calamar'; }\nelse if (msg.includes('magangue') || msg.includes('magangué')) { stationId = 'b7eac378-48b3-4c2c-9032-5991606c66f0'; stationName = 'Magangué'; }\nelse if (msg.includes('barrancabermeja')) { stationId = 'ea572438-c4de-471e-89dc-075996498b10'; stationName = 'Barrancabermeja'; }\n\n// Detect date range\nlet years = 30; // default all data\nconst yearMatch = msg.match(/(\\d+)\\s*año/);\nif (yearMatch) years = parseInt(yearMatch[1]);\nif (msg.includes('ultimo mes') || msg.includes('último mes')) years = 0.1;\nif (msg.includes('ultimo año') || msg.includes('último año')) years = 1;\n\nreturn [{\n  json: {\n    text: message,\n    session_id: sessionId,\n    email: email,\n    format: outputFormat,\n    analysis_type: analysisType,\n    station_id: stationId,\n    station_name: stationName,\n    years: years\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2000,
+        -400
+      ],
+      "id": "parse-input",
+      "name": "Parse Input"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ $json.query }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1400,
+        -200
+      ],
+      "id": "postgres-query",
+      "name": "Execute SQL",
+      "credentials": {
+        "postgres": {
+          "id": "MAGDALENABOT_POSTGRES",
+          "name": "MagdalenaBot Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate SQL based on analysis type\nconst input = $input.first().json;\nconst analysisType = input.analysis_type;\nconst stationId = input.station_id;\nconst years = input.years;\nconst stationName = input.station_name;\n\nif (!stationId) {\n  return [{ json: { error: 'No station specified', query: null } }];\n}\n\nlet query = '';\n\n// Analysis 1: Monthly Probability\nif (analysisType === 'monthly_probability') {\n  query = `\nWITH monthly_stats AS (\n  SELECT \n    EXTRACT(MONTH FROM measurement_date)::int as mes,\n    water_level_m,\n    water_level_cm\n  FROM water_level_measurements \n  WHERE station_id = '${stationId}'\n    AND parameter = 'NivelMedioDiario'\n    AND measurement_date >= CURRENT_DATE - INTERVAL '${years} years'\n),\npercentiles AS (\n  SELECT \n    mes,\n    COUNT(*) as registros,\n    ROUND(AVG(water_level_m)::numeric, 3) as promedio_m,\n    ROUND(AVG(water_level_cm)::numeric, 1) as promedio_cm,\n    ROUND(MIN(water_level_m)::numeric, 3) as minimo_m,\n    ROUND(MAX(water_level_m)::numeric, 3) as maximo_m,\n    ROUND(PERCENTILE_CONT(0.10) WITHIN GROUP (ORDER BY water_level_m)::numeric, 3) as p10_m,\n    ROUND(PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY water_level_m)::numeric, 3) as p25_m,\n    ROUND(PERCENTILE_CONT(0.50) WITHIN GROUP (ORDER BY water_level_m)::numeric, 3) as p50_m,\n    ROUND(PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY water_level_m)::numeric, 3) as p75_m,\n    ROUND(PERCENTILE_CONT(0.90) WITHIN GROUP (ORDER BY water_level_m)::numeric, 3) as p90_m\n  FROM monthly_stats\n  GROUP BY mes\n)\nSELECT \n  mes,\n  CASE mes\n    WHEN 1 THEN 'Enero' WHEN 2 THEN 'Febrero' WHEN 3 THEN 'Marzo'\n    WHEN 4 THEN 'Abril' WHEN 5 THEN 'Mayo' WHEN 6 THEN 'Junio'\n    WHEN 7 THEN 'Julio' WHEN 8 THEN 'Agosto' WHEN 9 THEN 'Septiembre'\n    WHEN 10 THEN 'Octubre' WHEN 11 THEN 'Noviembre' WHEN 12 THEN 'Diciembre'\n  END as mes_nombre,\n  registros,\n  promedio_m, promedio_cm,\n  minimo_m, maximo_m,\n  p10_m, p25_m, p50_m, p75_m, p90_m\nFROM percentiles\nORDER BY mes;`;
+}\n\n// Analysis 2: Exceedance Frequency\nelse if (analysisType === 'exceedance_frequency') {\n  query = `\nWITH stats AS (\n  SELECT \n    water_level_m,\n    water_level_cm,\n    COUNT(*) OVER () as total\n  FROM water_level_measurements \n  WHERE station_id = '${stationId}'\n    AND parameter = 'NivelMedioDiario'\n    AND measurement_date >= CURRENT_DATE - INTERVAL '${years} years'\n),\npercentiles AS (\n  SELECT DISTINCT\n    ROUND(PERCENTILE_CONT(0.90) WITHIN GROUP (ORDER BY water_level_m)::numeric, 3) as nivel_p90,\n    ROUND(PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY water_level_m)::numeric, 3) as nivel_p75,\n    ROUND(PERCENTILE_CONT(0.50) WITHIN GROUP (ORDER BY water_level_m)::numeric, 3) as nivel_p50,\n    ROUND(PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY water_level_m)::numeric, 3) as nivel_p25,\n    ROUND(PERCENTILE_CONT(0.10) WITHIN GROUP (ORDER BY water_level_m)::numeric, 3) as nivel_p10\n  FROM stats\n),\nexceedance AS (\n  SELECT \n    90 as prob_excedencia,\n    nivel_p90 as nivel_m,\n    ROUND((nivel_p90 * 100)::numeric, 1) as nivel_cm,\n    'Minimo' as clasificacion\n  FROM percentiles\n  UNION ALL\n  SELECT 75, nivel_p75, ROUND((nivel_p75 * 100)::numeric, 1), 'Bajo' FROM percentiles\n  UNION ALL\n  SELECT 50, nivel_p50, ROUND((nivel_p50 * 100)::numeric, 1), 'Normal' FROM percentiles\n  UNION ALL\n  SELECT 25, nivel_p25, ROUND((nivel_p25 * 100)::numeric, 1), 'Alto' FROM percentiles\n  UNION ALL\n  SELECT 10, nivel_p10, ROUND((nivel_p10 * 100)::numeric, 1), 'Maximo' FROM percentiles\n)\nSELECT * FROM exceedance ORDER BY prob_excedencia DESC;`;
+}\n\n// Analysis 3: Duration Curve\nelse if (analysisType === 'duration_curve') {\n  query = `\nWITH ranked AS (\n  SELECT \n    water_level_m,\n    water_level_cm,\n    ROW_NUMBER() OVER (ORDER BY water_level_m DESC) as rank,\n    COUNT(*) OVER () as total\n  FROM water_level_measurements \n  WHERE station_id = '${stationId}'\n    AND parameter = 'NivelMedioDiario'\n    AND measurement_date >= CURRENT_DATE - INTERVAL '${years} years'\n),\nduration_points AS (\n  SELECT \n    water_level_m,\n    water_level_cm,\n    ROUND((rank::float / total * 100)::numeric, 2) as duracion_pct,\n    ROUND((rank::float / total * 365)::numeric, 1) as dias_por_año\n  FROM ranked\n  WHERE rank IN (\n    1,\n    ROUND(total * 0.05)::int,\n    ROUND(total * 0.10)::int,\n    ROUND(total * 0.25)::int,\n    ROUND(total * 0.50)::int,\n    ROUND(total * 0.75)::int,\n    ROUND(total * 0.90)::int,\n    ROUND(total * 0.95)::int,\n    total\n  )\n)\nSELECT \n  duracion_pct as duracion_percentil,\n  ROUND(water_level_m::numeric, 3) as nivel_m,\n  water_level_cm as nivel_cm,\n  dias_por_año,\n  CASE \n    WHEN duracion_pct >= 90 THEN 'Muy Frecuente'\n    WHEN duracion_pct >= 75 THEN 'Frecuente'\n    WHEN duracion_pct >= 50 THEN 'Moderado'\n    WHEN duracion_pct >= 25 THEN 'Poco Frecuente'\n    ELSE 'Raro'\n  END as clasificacion\nFROM duration_points\nORDER BY duracion_pct DESC;`;
+}\n\n// Simple query\nelse {\n  query = `\nSELECT \n  measurement_date::date as fecha,\n  ROUND(water_level_m::numeric, 3) as nivel_m,\n  water_level_cm as nivel_cm\nFROM water_level_measurements \nWHERE station_id = '${stationId}'\n  AND parameter = 'NivelMedioDiario'\nORDER BY measurement_date DESC\nLIMIT 50;`;
+}\n\nreturn [{\n  json: {\n    query: query,\n    analysis_type: analysisType,\n    station_name: stationName,\n    station_id: stationId\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1600,
+        -400
+      ],
+      "id": "build-sql",
+      "name": "Build SQL"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Convert results to CSV\nconst input = $input.first().json;\nconst data = $input.all()[0].json;\n\nif (input.error || !data || data.length === 0) {\n  return [{ json: { csv: null, error: 'No data found' } }];\n}\n\n// Get columns from first row\nconst rows = Array.isArray(data) ? data : [data];\nconst columns = Object.keys(rows[0]);\n\n// Build CSV\nlet csv = columns.join(',') + '\\n';\n\nfor (const row of rows) {\n  const values = columns.map(col => {\n    const val = row[col];\n    // Escape values with commas or quotes\n    if (typeof val === 'string' && (val.includes(',') || val.includes('"'))) {\n      return '"' + val.replace(/"/g, '""') + '"';\n    }\n    return val === null || val === undefined ? '' : val;\n  });\n  csv += values.join(',') + '\\n';\n}\n\nreturn [{\n  json: {\n    csv: csv,\n    row_count: rows.length,\n    analysis_type: input.analysis_type,\n    station_name: input.station_name\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        -200
+      ],
+      "id": "to-csv",
+      "name": "Results to CSV"
+    },
+    {
+      "parameters": {
+        "toEmail": "={{ $('Parse Input').item.json.email }}",
+        "subject": "=[MagdalenaBot] Análisis Hidrológico - {{ $('Parse Input').item.json.station_name }}",
+        "text": "=Hola,\\n\\nAdjunto encontrarás el análisis hidrológico solicitado para la estación {{ $('Parse Input').item.json.station_name }}.\\n\\nTipo de análisis: {{ $('Parse Input').item.json.analysis_type }}\\nPeríodo: {{ $('Parse Input').item.json.years }} años\\nRegistros: {{ $json.row_count }}\\n\\nSaludos,\\nMagdalenaBot",
+        "attachments": "={{ { data: $json.csv, name: `analisis_${$('Parse Input').item.json.station_name}_${$('Parse Input').item.json.analysis_type}.csv`, encoding: 'utf-8' } }}"
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.2,
+      "position": [
+        -1000,
+        -200
+      ],
+      "id": "send-email",
+      "name": "Send Email",
+      "credentials": {
+        "smtp": {
+          "id": "SMTP_CREDENTIAL",
+          "name": "SMTP Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "jsonBody": "={{ { success: true, message: 'Analysis sent via email', station: $('Parse Input').item.json.station_name, analysis: $('Parse Input').item.json.analysis_type, rows: $('Results to CSV').item.json.row_count } }}"
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -800,
+        -400
+      ],
+      "id": "respond-webhook",
+      "name": "Respond Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build text summary from results\nconst data = $input.all()[0].json;\nconst input = $('Parse Input').item.json;\n\nif (!data || data.length === 0) {\n  return [{ json: { summary: 'No se encontraron datos para la consulta.' } }];\n}\n\nconst rows = Array.isArray(data) ? data : [data];\nconst analysisType = input.analysis_type;\nlet summary = '';\n\nif (analysisType === 'monthly_probability') {\n  summary = `Análisis de Probabilidad Mensual - ${input.station_name}\\n\\n`;\n  summary += 'Mes | Registros | Promedio (m) | P10 | P50 | P90\\n';\n  summary += '----|-----------|--------------|-----|-----|-----\\n';\n  for (const row of rows.slice(0, 6)) {\n    summary += `${row.mes_nombre} | ${row.registros} | ${row.promedio_m} | ${row.p10_m} | ${row.p50_m} | ${row.p90_m}\\n`;\n  }\n} else if (analysisType === 'exceedance_frequency') {\n  summary = `Curva de Frecuencia de Excedencia - ${input.station_name}\\n\\n`;\n  summary += 'Prob. Excedencia | Nivel (m) | Clasificación\\n';\n  summary += '------------------|-----------|---------------\\n';\n  for (const row of rows) {\n    summary += `${row.prob_excedencia}% | ${row.nivel_m} | ${row.clasificacion}\\n`;\n  }\n} else if (analysisType === 'duration_curve') {\n  summary = `Curva de Duración - ${input.station_name}\\n\\n`;\n  summary += 'Duración (%) | Nivel (m) | Días/año | Clasificación\\n';\n  summary += '-------------|-----------|----------|---------------\\n';\n  for (const row of rows) {\n    summary += `${row.duracion_percentil}% | ${row.nivel_m} | ${row.dias_por_año} | ${row.clasificacion}\\n`;\n  }\n} else {\n  summary = `Datos de nivel - ${input.station_name}\\n\\n`;\n  summary += 'Fecha | Nivel (m)\\n';\n  summary += '------|----------\\n';\n  for (const row of rows.slice(0, 10)) {\n    summary += `${row.fecha} | ${row.nivel_m}\\n`;\n  }\n}\n\nreturn [{ json: { summary: summary, row_count: rows.length } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        -400
+      ],
+      "id": "build-summary",
+      "name": "Build Text Summary"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-1",
+              "leftValue": "={{ $('Parse Input').item.json.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "isNotEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1400,
+        -300
+      ],
+      "id": "has-email",
+      "name": "Has Email?"
+    }
+  ],
+  "connections": {
+    "Webhook Entry": {
+      "main": [
+        [
+          {
+            "node": "Parse Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Input": {
+      "main": [
+        [
+          {
+            "node": "Build SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build SQL": {
+      "main": [
+        [
+          {
+            "node": "Execute SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute SQL": {
+      "main": [
+        [
+          {
+            "node": "Build Text Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Text Summary": {
+      "main": [
+        [
+          {
+            "node": "Has Email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Email?": {
+      "main": [
+        [
+          {
+            "node": "Results to CSV",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Results to CSV": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "main": [
+        [
+          {
+            "node": "Respond Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "timezone": "America/Bogota",
+    "executionTimeout": 60
+  },
+  "active": false,
+  "tags": [
+    {
+      "name": "MagdalenaBot"
+    },
+    {
+      "name": "Hydrology"
+    },
+    {
+      "name": "SQL-Only"
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+======================================================================
+HALLAZGOS DEL ANALISIS DE HOMOGENEIDAD
+Rio Magdalena - Serie de Niveles IDEAM 1967-2026
+======================================================================
+
+1. ESTACIONES CON CAMBIOS DE REGIMEN SIGNIFICATIVOS
+----------------------------------------------------------------------
+
+TENERIFE:
+  - Cambio detectado en año: 2005
+  - Estadistico Pettitt: -88.00 (p=0.0166)
+
+BARBOSA:
+  - Cambio detectado en año: 2012
+  - Estadistico Pettitt: 126.00 (p=0.0459)
+
+ARMENIA:
+  - Cambio detectado en año: 1998
+  - Estadistico Pettitt: -140.00 (p=0.0189)
+
+SITIO_NUEVO:
+  - Cambio detectado en año: 2008
+  - Estadistico Pettitt: 218.00 (p=0.0009)
+
+
+2. ESTACIONES CON TENDENCIAS SIGNIFICATIVAS
+----------------------------------------------------------------------
+
+TENERIFE:
+  - Tendencia: Increasing
+  - Tau de Kendall: 0.467 (p=0.0034)
+
+RIO_NUEVO:
+  - Tendencia: Increasing
+  - Tau de Kendall: 0.350 (p=0.0110)
+
+EL_BANCO:
+  - Tendencia: Increasing
+  - Tau de Kendall: 0.220 (p=0.0281)
+
+SITIO_NUEVO:
+  - Tendencia: Decreasing
+  - Tau de Kendall: -0.386 (p=0.0017)
+
+
+3. MEJORES PARES DE ESTACIONES (ALTA CORRELACION)
+----------------------------------------------------------------------
+
+126. LAS_AGUADAS - EL_BANCO
+   Correlacion: r = 0.989
+   Periodo comun: 1973-2025
+   Años concurrentes: 49.6
+
+20. CALAMAR - MAGANGUE
+   Correlacion: r = 0.988
+   Periodo comun: 1973-2025
+   Años concurrentes: 43.1
+
+118. LAS_PALOMAS - LAS_AGUADAS
+   Correlacion: r = 0.958
+   Periodo comun: 1973-2025
+   Años concurrentes: 42.3
+
+18. CALAMAR - TENERIFE
+   Correlacion: r = 0.980
+   Periodo comun: 1973-2026
+   Años concurrentes: 38.7
+
+119. LAS_PALOMAS - EL_BANCO
+   Correlacion: r = 0.957
+   Periodo comun: 1973-2025
+   Años concurrentes: 41.8
+
+22. CALAMAR - COYONGAL
+   Correlacion: r = 0.939
+   Periodo comun: 1975-2026
+   Años concurrentes: 42.8
+
+91. COYONGAL - LAS_AGUADAS
+   Correlacion: r = 0.935
+   Periodo comun: 1975-2025
+   Años concurrentes: 41.9
+
+21. CALAMAR - BARBOSA
+   Correlacion: r = 0.952
+   Periodo comun: 1973-2024
+   Años concurrentes: 39.1
+
+110. RIO_NUEVO - LAS_AGUADAS
+   Correlacion: r = 0.956
+   Periodo comun: 1974-2025
+   Años concurrentes: 38.2
+
+27. CALAMAR - EL_BANCO
+   Correlacion: r = 0.887
+   Periodo comun: 1972-2026
+   Años concurrentes: 51.1
+
+
+4. ESTACIONES RECOMENDADAS COMO REFERENCIA
+----------------------------------------------------------------------
+Estaciones homogeneas con largos registros (candidatas a donantes):
+  - CALAMAR: 59 años
+  - LAS_AGUADAS: 49 años
+  - PENONCITO: 40 años
+  - SAN_PEDRITO: 39 años
+  - PLATO: 35 años
+
+======================================================================
+Fin del reporte

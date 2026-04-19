@@ -1,0 +1,137 @@
+{
+  "name": "MagdalenaBot - Email Sender",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "magdalenabot/send-analysis",
+        "responseMode": "responseNode"
+      },
+      "name": "Webhook - Receive Analysis",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "tableId": "water_level_measurements",
+        "filters": {
+          "conditions": [
+            {
+              "column": "station_code",
+              "operator": "eq",
+              "value": "={{ $json.station_code }}"
+            }
+          ]
+        },
+        "limit": 100
+      },
+      "name": "Get Station Data",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [450, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "MAGDALENABOT_SUPABASE",
+          "name": "MagdalenaBot Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse incoming data from MagdalenaBot\nconst input = items[0].json;\n\n// Extract email and station info\nconst email = input.email;\nconst stationName = input.station_name;\nconst stationCode = input.station_code;\nconst analysisType = input.analysis_type;\nconst csvs = input.csvs || {};\n\n// Prepare CSV attachments\nconst attachments = [];\n\nfor (const [name, csvContent] of Object.entries(csvs)) {\n  // Convert CSV string to base64\n  const base64Content = Buffer.from(csvContent, 'utf-8').toString('base64');\n  \n  attachments.push({\n    name: `${stationCode}_${name}.csv`,\n    content: base64Content,\n    encoding: 'base64',\n    mimetype: 'text/csv'\n  });\n}\n\n// Generate email subject\nconst subject = `[MagdalenaBot] Análisis Hidrológico - ${stationName} (${analysisType})`;\n\n// Generate email body\nconst body = generateEmailBody(stationName, stationCode, analysisType, input.metadata);\n\nreturn [{\n  json: {\n    email,\n    subject,\n    body,\n    attachments,\n    stationName,\n    stationCode\n  }\n}];\n\nfunction generateEmailBody(stationName, stationCode, analysisType, metadata) {\n  const analysisDescriptions = {\n    'monthly_probability': 'Análisis de Probabilidad Mensual - Distribuciones de niveles por mes',\n    'exceedance_frequency': 'Curvas de Frecuencia de Excedencia - Probabilidad de superación de niveles',\n    'duration_curve': 'Curvas de Duración - Persistencia temporal de niveles',\n    'all': 'Análisis Completo Hidrológico'\n  };\n  \n  const metadataHtml = metadata ? `\n    <div class=\"info-box\">\n      <h3>📊 Estadísticas del Período</h3>\n      <p><strong>Total de observaciones:</strong> ${metadata.total_observations || 'N/A'}</p>\n      <p><strong>Rango de fechas:</strong> ${metadata.date_range_start || 'N/A'} a ${metadata.date_range_end || 'N/A'}</p>\n      <p><strong>Años de datos:</strong> ${metadata.years_of_data || 'N/A'}</p>\n      <p><strong>Nivel mínimo:</strong> ${metadata.level_min_cm || 'N/A'} cm</p>\n      <p><strong>Nivel máximo:</strong> ${metadata.level_max_cm || 'N/A'} cm</p>\n      <p><strong>Nivel promedio:</strong> ${metadata.level_mean_cm || 'N/A'} cm</p>\n    </div>\n  ` : '';\n  \n  return `<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <style>\n    body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 700px; margin: 0 auto; }\n    .header { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }\n    .header h1 { margin: 0; font-size: 28px; }\n    .header p { margin: 10px 0 0 0; opacity: 0.9; }\n    .content { padding: 30px; background: #ffffff; }\n    .info-box { background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6; }\n    .info-box h3 { margin-top: 0; color: #1e3a8a; }\n    .file-list { background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; }\n    .file-list ul { margin: 0; padding-left: 20px; }\n    .file-list li { margin: 8px 0; color: #475569; }\n    .analysis-type { background: #dbeafe; color: #1e40af; padding: 8px 16px; border-radius: 20px; display: inline-block; font-weight: 600; margin: 10px 0; }\n    .guide { background: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b; }\n    .guide h3 { margin-top: 0; color: #92400e; }\n    .code-block { background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 8px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 13px; }\n    .footer { text-align: center; padding: 30px; background: #f1f5f9; color: #64748b; font-size: 13px; border-radius: 0 0 8px 8px; }\n    .footer strong { color: #334155; }\n    h2 { color: #1e3a8a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }\n    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0; }\n    .stat-card { background: white; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }\n    .stat-value { font-size: 24px; font-weight: bold; color: #3b82f6; }\n    .stat-label { font-size: 12px; color: #64748b; text-transform: uppercase; }\n  </style>\n</head>\n<body>\n  <div class=\"header\">\n    <h1>🌊 MagdalenaBot</h1>\n    <p>Sistema de Análisis Hidrológico del Río Magdalena</p>\n  </div>\n  \n  <div class=\"content\">\n    <h2>Análisis Completado</h2>\n    \n    <div class=\"analysis-type\">${analysisDescriptions[analysisType] || analysisType}</div>\n    \n    <div class=\"info-box\">\n      <h3>📍 Información de la Estación</h3>\n      <p><strong>Nombre:</strong> ${stationName}</p>\n      <p><strong>Código:</strong> ${stationCode}</p>\n      <p><strong>Fecha de generación:</strong> ${new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' })}</p>\n    </div>\n    \n    ${metadataHtml}\n    \n    <h3>📎 Archivos Adjuntos</h3>\n    <p>Los siguientes archivos CSV contienen los datos procesados listos para su análisis:</p>\n    \n    <div class=\"file-list\">\n      <ul>\n        <li><strong>📊 monthly_probability.csv</strong> - Estadísticas mensuales y KDE (Kernel Density Estimation)</li>\n        <li><strong>📈 exceedance_frequency.csv</strong> - Probabilidades de excedencia con referencias estándar</li>\n        <li><strong>⏱️ duration_curve.csv</strong> - Curva de duración con persistencia temporal</li>\n        <li><strong>📝 metadata.csv</strong> - Resumen, metadatos y estadísticas generales</li>\n      </ul>\n    </div>\n    \n    <div class=\"guide\">\n      <h3>📖 Guía de Uso</h3>\n      \n      <p><strong>Para Excel:</strong></p>\n      <ol>\n        <li>Abra los archivos CSV directamente (separados por comas)</li>\n        <li><strong>Monthly Probability:</strong> Use las columnas percentile_* para gráficos de caja</li>\n        <li><strong>Exceedance Frequency:</strong> Gráfico XY con exceedance_probability_percent en X</li>\n        <li><strong>Duration Curve:</strong> Gráfico XY con duration_percent en X, water_level_cm en Y</li>\n      </ol>\n      \n      <p><strong>Para Python/Matplotlib:</strong></p>\n      <div class=\"code-block\">\nimport pandas as pd\nimport matplotlib.pyplot as plt\n\n# Cargar datos\ndf_prob = pd.read_csv('monthly_probability.csv')\ndf_exceed = pd.read_csv('exceedance_frequency.csv')\ndf_duration = pd.read_csv('duration_curve.csv')\n\n# Boxplot por mes\nplt.figure(figsize=(12, 6))\nplt.boxplot([df_prob[df_prob['month']==m]['percentile_50'] \n             for m in range(1,13)], labels=['Ene','Feb',...])\nplt.title('Distribución Mensual de Niveles')\nplt.show()\n\n# Curva de excedencia\nplt.figure(figsize=(10, 6))\nplt.semilogy(df_exceed['exceedance_probability_percent'], \n             df_exceed['water_level_cm'])\nplt.xlabel('Probabilidad de Excedencia (%)')\nplt.ylabel('Nivel (cm)')\nplt.grid(True)\nplt.show()\n      </div>\n    </div>\n    \n    <h3>🔬 Interpretación de Resultados</h3>\n    <ul>\n      <li><strong>Monthly Probability:</strong> Muestra la distribución de niveles por mes. Útil para identificar estacionalidad.</li>\n      <li><strong>Exceedance Frequency:</strong> Probabilidad de que un nivel sea superado. P90 = nivel mínimo, P10 = nivel máximo.</li>\n      <li><strong>Duration Curve:</strong> Porcentaje de tiempo que un nivel persiste. Esencial para diseño de obras hidráulicas.</li>\n    </ul>\n  </div>\n  \n  <div class=\"footer\">\n    <p><strong>MagdalenaBot v2.0</strong> - Sistema de Análisis del Río Magdalena</p>\n    <p>Datos provenientes del IDEAM - Instituto de Hidrología, Meteorología y Estudios Ambientales</p>\n    <p style=\"margin-top: 15px; font-size: 11px;\">\n      Este es un email automático. Para soporte, contacte al equipo de hidrología.\n    </p>\n  </div>\n</body>\n</html>`;\n}"
+      },
+      "name": "Prepare Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "toEmail": "={{ $json.email }}",
+        "subject": "={{ $json.subject }}",
+        "html": "={{ $json.body }}",
+        "attachments": "={{ JSON.stringify($json.attachments) }}"
+      },
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.2,
+      "position": [850, 300],
+      "credentials": {
+        "smtp": {
+          "id": "YOUR_SMTP_CREDENTIAL_ID",
+          "name": "SMTP Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "jsonBody": "={{ { success: true, message: \"Email sent successfully\", station: $json.stationName, timestamp: new Date().toISOString() } }}"
+      },
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "jsonBody": "={{ { success: false, error: \"Failed to send email\", timestamp: new Date().toISOString() } }}"
+      },
+      "name": "Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1050, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate input\nconst input = items[0].json;\nconst errors = [];\n\nif (!input.email) errors.push('Missing email');\nif (!input.station_code) errors.push('Missing station_code');\nif (!input.station_name) errors.push('Missing station_name');\nif (!input.analysis_type) errors.push('Missing analysis_type');\nif (!input.csvs || Object.keys(input.csvs).length === 0) errors.push('Missing CSVs');\n\nif (errors.length > 0) {\n  return [{\n    json: {\n      success: false,\n      errors: errors,\n      message: 'Validation failed'\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    success: true,\n    data: input\n  }\n}];"
+      },
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 100]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log the request for debugging\nconst input = items[0].json;\nconsole.log('MagdalenaBot Request:', {\n  timestamp: new Date().toISOString(),\n  station: input.station_name,\n  code: input.station_code,\n  analysis: input.analysis_type,\n  email: input.email\n});\nreturn items;"
+      },
+      "name": "Log Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 500]
+    }
+  ],
+  "connections": {
+    "Webhook - Receive Analysis": {
+      "main": [
+        [{"node": "Validate Input", "type": "main", "index": 0}]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [{"node": "Prepare Email", "type": "main", "index": 0}],
+        [{"node": "Error Response", "type": "main", "index": 0}]
+      ]
+    },
+    "Prepare Email": {
+      "main": [
+        [{"node": "Log Request", "type": "main", "index": 0}],
+        [{"node": "Send Email", "type": "main", "index": 0}]
+      ]
+    },
+    "Send Email": {
+      "main": [
+        [{"node": "Success Response", "type": "main", "index": 0}],
+        [{"node": "Error Response", "type": "main", "index": 0}]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Bogota",
+    "executionTimeout": 300
+  }
+}

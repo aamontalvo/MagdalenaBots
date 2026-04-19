@@ -1,0 +1,349 @@
+{
+  "name": "MagdalenaBot Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "8fd5fe3c-6e9b-49d6-a1d7-b877d31761ee",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2000,
+        -400
+      ],
+      "id": "webhook-entry",
+      "name": "Webhook Entry",
+      "webhookId": "8fd5fe3c-6e9b-49d6-a1d7-b877d31761ee"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.id || $json.body.session_id || 'default' }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1200,
+        -100
+      ],
+      "id": "memory-buffer",
+      "name": "Memory Buffer"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=Eres MagdalenaBot, un Agente SQL especializado en hidrología del río Magdalena.\n\n## TU ÚNICO OBJETIVO\nConvertir lenguaje natural a consultas PostgreSQL seguras y generar análisis hidrológicos.\n\n## ESTACIONES DISPONIBLES (3)\n- Calamar (ID: 011375ab-c1be-4fa4-aa97-be2f39483b34) - Código IDEAM: 29037020\n- Magangué (ID: b7eac378-48b3-4c2c-9032-5991606c66f0) - Código IDEAM: 25027680\n- Barrancabermeja (ID: ea572438-c4de-471e-89dc-075996498b10) - Código IDEAM: 23157030\n\n## REGLAS DE ORO (NO VIOLAR)\n1. **SELECT SOLO**: Nunca uses INSERT, UPDATE, DELETE, DROP, ALTER\n2. **FILTRO OBLIGATORIO**: Siempre filtra por station_id Y parameter='NivelMedioDiario'\n3. **SEGURIDAD**: Usa parámetros con $1, $2 en lugar de concatenar strings\n4. **RANGO DE FECHAS**: Por defecto, últimos 30 días. Máximo 365 días\n5. **ORDEN**: Siempre ORDER BY measurement_date DESC\n6. **LÍMITES**: LIMIT 50 por defecto, máximo 10000\n7. **FORMATO FECHAS**: ISO 8601 (YYYY-MM-DD)\n\n## ANÁLISIS DISPONIBLES\n1. **monthly_probability**: Distribución mensual con percentiles (10, 25, 50, 75, 90)\n2. **exceedance_frequency**: Curvas de excedencia para evaluación de riesgo\n3. **duration_curve**: Curvas de duración (persistence analysis)\n4. **complete**: Los 3 análisis anteriores juntos\n\n## UMBRALES INTELIGENTES\n- \"crecida\"/\"inundación\" → water_level_m > percentil 90\n- \"sequía\"/\"bajante\" → water_level_m < percentil 10\n- \"normal\" → BETWEEN percentil 25 y percentil 75\n\n## RESPUESTAS\n- Siempre responde con station_name, no station_id\n- Incluye unidades (metros o centímetros según solicitud)\n- Sé conciso pero completo\n- Si confianza > 80%, ejecuta sin pedir confirmación"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -1400,
+        -400
+      ],
+      "id": "agent-core",
+      "name": "Magdalena Agent"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ $fromAI(\"query\") }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        -1000,
+        -600
+      ],
+      "id": "postgres-tool",
+      "name": "Postgres WaterLevels",
+      "credentials": {
+        "postgres": {
+          "id": "MAGDALENABOT_POSTGRES",
+          "name": "MagdalenaBot Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        -1000,
+        -400
+      ],
+      "id": "tool-think",
+      "name": "Think Tool"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        -1000,
+        -200
+      ],
+      "id": "tool-calc",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -1600,
+        -100
+      ],
+      "id": "llm-openai",
+      "name": "OpenAI LLM",
+      "credentials": {
+        "openAiApi": {
+          "id": "OPENAI_CREDENTIAL",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0.4
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1600,
+        -300
+      ],
+      "id": "llm-gemini",
+      "name": "Gemini LLM",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "GEMINI_CREDENTIAL",
+          "name": "Google Gemini"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Retrieve station metadata and information",
+        "tableName": {
+          "__rl": true,
+          "value": "stations",
+          "mode": "list"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        -1000,
+        0
+      ],
+      "id": "vector-stations",
+      "name": "Stations Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "SUPABASE_CREDENTIAL",
+          "name": "Supabase API"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -1200,
+        200
+      ],
+      "id": "embeddings",
+      "name": "OpenAI Embeddings",
+      "credentials": {
+        "openAiApi": {
+          "id": "OPENAI_CREDENTIAL",
+          "name": "OpenAI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse webhook input for agent\nconst body = $input.first().json.body || {};\n\n// Extract message from various formats\nconst message = body.last_input_text || body.message || body.text || body.query;\n\n// Extract session ID for memory\nconst sessionId = body.id || body.session_id || body.user_id || 'default';\n\n// Extract email if provided\nconst email = body.email || body.user_email;\n\nreturn [{\n  json: {\n    text: message,\n    session_id: sessionId,\n    email: email,\n    original_body: body\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1800,
+        -400
+      ],
+      "id": "parse-input",
+      "name": "Parse Input"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "jsonBody": "={{ { output: $json.output, session_id: $json.session_id } }}"
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -800,
+        -400
+      ],
+      "id": "respond-webhook",
+      "name": "Respond Webhook"
+    }
+  ],
+  "connections": {
+    "Webhook Entry": {
+      "main": [
+        [
+          {
+            "node": "Parse Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Input": {
+      "main": [
+        [
+          {
+            "node": "Magdalena Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory Buffer": {
+      "ai_memory": [
+        [
+          {
+            "node": "Magdalena Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres WaterLevels": {
+      "ai_tool": [
+        [
+          {
+            "node": "Magdalena Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Magdalena Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "Magdalena Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Magdalena Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Gemini LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Magdalena Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stations Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Magdalena Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Stations Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Magdalena Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "timezone": "America/Bogota",
+    "executionTimeout": 120
+  },
+  "active": false,
+  "tags": [
+    {
+      "name": "MagdalenaBot"
+    },
+    {
+      "name": "Hydrology"
+    }
+  ]
+}

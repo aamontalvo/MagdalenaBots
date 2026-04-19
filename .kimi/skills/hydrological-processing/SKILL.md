@@ -109,9 +109,69 @@ Standard downstream-to-upstream order for Río Magdalena:
 - **Missing data threshold**: < 80% coverage = questionable for analysis
 - **Outlier detection**: IQR method (1.5 × IQR beyond Q1/Q3)
 
+## CRITICAL RULE: Exclude February 29 (Leap Year Day)
+
+**MANDATORY**: For all hydrological analyses involving daily aggregation or percentiles (Fig4, seasonal patterns, etc.), **EXCLUDE February 29** completely:
+
+```python
+# ALWAYS filter out February 29 before analysis
+df = df[df['Fecha'].dt.strftime('%m-%d') != '02-29']
+```
+
+**Rationale**:
+- February 29 only occurs every 4 years (25% of data points)
+- Introduces statistical noise in percentile calculations
+- Creates inconsistent sample sizes across days
+- For Fig4 (Frequency Curves), daily percentiles must be based on consistent N across all days
+
+**Apply to**: Fig4, seasonal analysis, daily statistics, any analysis grouping by day-of-year
+
 ## Quality Control Checks
 
 1. **Temporal coverage**: Verify start/end years per station
 2. **Gaps**: Identify years with < 50% data availability
 3. **Outliers**: Boxplot visualization by station
 4. **Consistency**: Check for impossible values (negative levels if appropriate)
+
+## Imputation System Architecture (v4.2)
+
+The imputation system has **3 main levels**, where Level 2 has **2 sub-levels** based on correlation quality:
+
+### Level 1: Local Interpolation (L1)
+- **Condition**: Gap ≤ 3 consecutive days with valid data on both sides
+- **Method**: Weighted moving average
+- **Nivel_Imputacion**: 1
+- **Records**: ~1,000
+
+### Level 2: Height-Height Curves (L2/L3)
+**Both L2 and L3 use the same method** (quadratic regression with single donor station), but are classified based on R² quality:
+
+| Sub-level | R² Range | Stations | Records | Nivel_Imputacion |
+|-----------|----------|----------|---------|------------------|
+| **L2 (High confidence)** | ≥ 0.95 | Tenerife, Magangue | 8,227 | 2 |
+| **L3 (Medium confidence)** | 0.75 - 0.95 | Barbosa, Rio Nuevo, Las Palomas, Coyongal, Penoncito, Plato | 17,793 | 3 |
+
+**Common characteristics**:
+- Single donor station per target
+- Quadratic equation: `H_target = a·H_donor² + b·H_donor + c`
+- Minimum R² threshold: ≥ 0.75
+- Minimum training data: n ≥ 50
+
+### Level 4: Advanced Methods (L4)
+- **Condition**: No suitable donor stations available
+- **Methods**: 
+  - L4_HH_quadratic: Extended HH extrapolation
+  - L4_missForest: Machine learning model (last resort)
+- **Nivel_Imputacion**: 4
+- **Records**: ~5,300 (HH) + 15 (missForest)
+
+### Summary Table
+
+| Method | Nivel_Imputacion | Count | % of Total |
+|--------|------------------|-------|------------|
+| Original | 0 | 272,055 | 89.3% |
+| L1_Interpolacion | 1 | 1,005 | 0.4% |
+| L2_HH_quadratic | 2 | 8,227 | 2.7% |
+| L3_HH_quadratic | 3 | 17,793 | 5.6% |
+| L4_HH_quadratic | 4 | 5,348 | 1.6% |
+| L4_missForest | 4 | 15 | ~0% |

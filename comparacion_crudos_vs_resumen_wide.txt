@@ -1,0 +1,260 @@
+========================================================================================================================
+COMPARACION: DATOS CRUDOS (originales) vs RESUMEN WIDE FORMAT
+========================================================================================================================
+Estacion                            Formato      Inicio         Fin            Registros    Rango
+------------------------------------------------------------------------------------------------------------------------
+ARMENIA                             CRUDOS       1982-05-14     2025-10-15     13183        44 años
+ARMENIA                             RESUMEN      1973-02-01     2025-10-15     15020        53 años
+------------------------------------------------------------------------------------------------------------------------
+BARBOSA                             CRUDOS       ERROR
+BARBOSA                             RESUMEN      1973-10-01     2024-12-20     14350        52 años
+------------------------------------------------------------------------------------------------------------------------
+CALAMAR                             CRUDOS       1980-07-26     2026-02-09     16522        47 años
+CALAMAR                             RESUMEN      1967-02-01     2026-02-09     21381        60 años
+------------------------------------------------------------------------------------------------------------------------
+COYONGAL                            CRUDOS       1980-01-01     2026-02-09     15121        47 años
+COYONGAL                            RESUMEN      1975-03-01     2026-02-09     15726        52 años
+------------------------------------------------------------------------------------------------------------------------
+EL BANCO - AUT                      CRUDOS       1984-02-25     2026-02-09     15102        43 años
+EL BANCO - AUT                      RESUMEN      1972-10-01     2026-02-09     18744        55 años
+------------------------------------------------------------------------------------------------------------------------
+EL CONTENTO                         CRUDOS       2003-03-12     2026-01-17     7013         24 años
+EL CONTENTO                         RESUMEN      1974-09-01     2026-01-17     13447        53 años
+------------------------------------------------------------------------------------------------------------------------
+GAMARRA - AUT                       CRUDOS       2013-01-01     2026-01-18     4417         14 años
+GAMARRA - AUT                       RESUMEN      2013-01-01     2026-01-18     4415         14 años
+------------------------------------------------------------------------------------------------------------------------
+LAS AGUADAS                         CRUDOS       1979-10-19     2025-08-31     16577        47 años
+LAS AGUADAS                         RESUMEN      1973-04-01     2025-08-31     18749        53 años
+------------------------------------------------------------------------------------------------------------------------
+LAS PALOMAS                         CRUDOS       1981-03-16     2025-06-30     14088        45 años
+LAS PALOMAS                         RESUMEN      1973-08-01     2025-06-30     15688        53 años
+------------------------------------------------------------------------------------------------------------------------
+LA GLORIA23217060                   CRUDOS       2011-02-25     2026-01-18     4562         16 años
+LA GLORIA23217060                   RESUMEN      1991-04-21     2026-01-18     11156        36 años
+------------------------------------------------------------------------------------------------------------------------
+MAGANGUE                            CRUDOS       1979-10-06     2025-12-30     14751        47 años
+MAGANGUE                            RESUMEN      1973-04-01     2025-12-30     15799        53 años
+------------------------------------------------------------------------------------------------------------------------
+PENONCITO                           CRUDOS       1983-04-01     2025-08-31     14340        43 años
+PENONCITO                           RESUMEN      1972-10-01     2025-06-30     17097        54 años
+------------------------------------------------------------------------------------------------------------------------
+PLATO MAGDALENA AUT                 CRUDOS       1979-03-31     2025-12-11     15375        47 años
+PLATO MAGDALENA AUT                 RESUMEN      1976-06-01     2019-12-31     14145        44 años
+------------------------------------------------------------------------------------------------------------------------
+PUERTO WILCHES                      CRUDOS       2009-07-24     2025-09-11     5633         17 años
+PUERTO WILCHES                      RESUMEN      2003-05-07     2025-09-11     7806         23 años
+------------------------------------------------------------------------------------------------------------------------
+RIO NUEVO                           CRUDOS       1979-11-01     2025-10-23     12940        47 años
+RIO NUEVO                           RESUMEN      1974-10-01     2025-10-23     14209        52 años
+------------------------------------------------------------------------------------------------------------------------
+SAN PEDRITO - AUT                   CRUDOS       2004-12-04     2026-02-09     7658         23 años
+SAN PEDRITO - AUT                   RESUMEN      ERROR: No data
+------------------------------------------------------------------------------------------------------------------------
+SITIO NUEVO                         CRUDOS       2003-07-14     2026-01-18     7396         24 años
+SITIO NUEVO                         RESUMEN      1979-03-01     2026-01-18     15104        48 años
+------------------------------------------------------------------------------------------------------------------------
+TENERIFE                            CRUDOS       1979-04-01     2026-02-09     12614        48 años
+TENERIFE                            RESUMEN      1973-10-01     2026-02-09     14179        54 años
+------------------------------------------------------------------------------------------------------------------------
+
+========================================================================================================================
+ANALISIS DE DISCREPANCIAS CRUDOS vs RESUMEN WIDE
+========================================================================================================================
+
+[+] ARMENIA (Hoja: Armenia)
+--------------------------------------------------------------------------------
+   [DIF] INICIO: RESUMEN tiene 9.3 años mas de datos historicos
+              RESUMEN: 1973-02-01 | Crudos: 1982-05-14
+   [OK] FIN: Ambos coinciden (2025-10-15)
+   [DIF] REGISTROS: Diferencia de -1837 registros (-12.2%)
+                 Crudos: 13183 | RESUMEN: 15020
+   [DIF] AÑOS: Crudos=44 años, RESUMEN=53 años
+              RESUMEN tiene 9 años adicionales
+
+[+] BARBOSA (Hoja: Barbosa)
+--------------------------------------------------------------------------------
+   [!] CRUDOS: Error
+   [OK] RESUMEN: 14350 registros desde 1973-10-01
+
+[+] CALAMAR (Hoja: Calamar)
+--------------------------------------------------------------------------------
+   [DIF] INICIO: RESUMEN tiene 13.5 años mas de datos historicos
+              RESUMEN: 1967-02-01 | Crudos: 1980-07-26
+   [OK] FIN: Ambos coinciden (2026-02-09)
+   [DIF] REGISTROS: Diferencia de -4859 registros (-22.7%)
+                 Crudos: 16522 | RESUMEN: 21381
+   [DIF] AÑOS: Crudos=47 años, RESUMEN=60 años
+              RESUMEN tiene 13 años adicionales
+
+[+] COYONGAL (Hoja: Coyongal)
+--------------------------------------------------------------------------------
+   [DIF] INICIO: RESUMEN tiene 4.8 años mas de datos historicos
+              RESUMEN: 1975-03-01 | Crudos: 1980-01-01
+   [OK] FIN: Ambos coinciden (2026-02-09)
+   [DIF] REGISTROS: Diferencia de -605 registros (-3.8%)
+                 Crudos: 15121 | RESUMEN: 15726
+   [DIF] AÑOS: Crudos=47 años, RESUMEN=52 años
+              RESUMEN tiene 5 años adicionales
+
+[+] EL BANCO - AUT (Hoja: ElBanco)
+--------------------------------------------------------------------------------
+   [DIF] INICIO: RESUMEN tiene 11.4 años mas de datos historicos
+              RESUMEN: 1972-10-01 | Crudos: 1984-02-25
+   [OK] FIN: Ambos coinciden (2026-02-09)
+   [DIF] REGISTROS: Diferencia de -3642 registros (-19.4%)
+                 Crudos: 15102 | RESUMEN: 18744
+   [DIF] AÑOS: Crudos=43 años, RESUMEN=55 años
+              RESUMEN tiene 12 años adicionales
+
+[+] EL CONTENTO (Hoja: ElContento)
+--------------------------------------------------------------------------------
+   [DIF] INICIO: RESUMEN tiene 28.5 años mas de datos historicos
+              RESUMEN: 1974-09-01 | Crudos: 2003-03-12
+   [OK] FIN: Ambos coinciden (2026-01-17)
+   [DIF] REGISTROS: Diferencia de -6434 registros (-47.8%)
+                 Crudos: 7013 | RESUMEN: 13447
+   [DIF] AÑOS: Crudos=24 años, RESUMEN=53 años
+              RESUMEN tiene 29 años adicionales
+
+[+] GAMARRA - AUT (Hoja: GamarraAut)
+--------------------------------------------------------------------------------
+   [OK] INICIO: Ambos coinciden (2013-01-01)
+   [OK] FIN: Ambos coinciden (2026-01-18)
+   [DIF] REGISTROS: Diferencia de 2 registros (+0.0%)
+                 Crudos: 4417 | RESUMEN: 4415
+
+[+] LAS AGUADAS (Hoja: LasAguadas)
+--------------------------------------------------------------------------------
+   [DIF] INICIO: RESUMEN tiene 6.5 años mas de datos historicos
+              RESUMEN: 1973-04-01 | Crudos: 1979-10-19
+   [OK] FIN: Ambos coinciden (2025-08-31)
+   [DIF] REGISTROS: Diferencia de -2172 registros (-11.6%)
+                 Crudos: 16577 | RESUMEN: 18749
+   [DIF] AÑOS: Crudos=47 años, RESUMEN=53 años
+              RESUMEN tiene 6 años adicionales
+
+[+] LAS PALOMAS (Hoja: LasPalomas)
+--------------------------------------------------------------------------------
+   [DIF] INICIO: RESUMEN tiene 7.6 años mas de datos historicos
+              RESUMEN: 1973-08-01 | Crudos: 1981-03-16
+   [OK] FIN: Ambos coinciden (2025-06-30)
+   [DIF] REGISTROS: Diferencia de -1600 registros (-10.2%)
+                 Crudos: 14088 | RESUMEN: 15688
+   [DIF] AÑOS: Crudos=45 años, RESUMEN=53 años
+              RESUMEN tiene 8 años adicionales
+
+[+] LA GLORIA23217060 (Hoja: LaGloria)
+--------------------------------------------------------------------------------
+   [DIF] INICIO: RESUMEN tiene 19.8 años mas de datos historicos
+              RESUMEN: 1991-04-21 | Crudos: 2011-02-25
+   [OK] FIN: Ambos coinciden (2026-01-18)
+   [DIF] REGISTROS: Diferencia de -6594 registros (-59.1%)
+                 Crudos: 4562 | RESUMEN: 11156
+   [DIF] AÑOS: Crudos=16 años, RESUMEN=36 años
+              RESUMEN tiene 20 años adicionales
+
+[+] MAGANGUE (Hoja: Magangue)
+--------------------------------------------------------------------------------
+   [DIF] INICIO: RESUMEN tiene 6.5 años mas de datos historicos
+              RESUMEN: 1973-04-01 | Crudos: 1979-10-06
+   [OK] FIN: Ambos coinciden (2025-12-30)
+   [DIF] REGISTROS: Diferencia de -1048 registros (-6.6%)
+                 Crudos: 14751 | RESUMEN: 15799
+   [DIF] AÑOS: Crudos=47 años, RESUMEN=53 años
+              RESUMEN tiene 6 años adicionales
+
+[+] PENONCITO (Hoja: Penoncito)
+--------------------------------------------------------------------------------
+   [DIF] INICIO: RESUMEN tiene 10.5 años mas de datos historicos
+              RESUMEN: 1972-10-01 | Crudos: 1983-04-01
+   [DIF] FIN: CRUDOS tiene 62 dias mas de datos recientes
+           Crudos: 2025-08-31 | RESUMEN: 2025-06-30
+   [DIF] REGISTROS: Diferencia de -2757 registros (-16.1%)
+                 Crudos: 14340 | RESUMEN: 17097
+   [DIF] AÑOS: Crudos=43 años, RESUMEN=54 años
+              RESUMEN tiene 11 años adicionales
+
+[+] PLATO MAGDALENA AUT (Hoja: Plato)
+--------------------------------------------------------------------------------
+   [DIF] INICIO: RESUMEN tiene 2.8 años mas de datos historicos
+              RESUMEN: 1976-06-01 | Crudos: 1979-03-31
+   [DIF] FIN: CRUDOS tiene 2172 dias mas de datos recientes
+           Crudos: 2025-12-11 | RESUMEN: 2019-12-31
+   [DIF] REGISTROS: Diferencia de 1230 registros (+8.7%)
+                 Crudos: 15375 | RESUMEN: 14145
+   [DIF] AÑOS: Crudos=47 años, RESUMEN=44 años
+
+[+] PUERTO WILCHES (Hoja: PuertoWilches)
+--------------------------------------------------------------------------------
+   [DIF] INICIO: RESUMEN tiene 6.2 años mas de datos historicos
+              RESUMEN: 2003-05-07 | Crudos: 2009-07-24
+   [OK] FIN: Ambos coinciden (2025-09-11)
+   [DIF] REGISTROS: Diferencia de -2173 registros (-27.8%)
+                 Crudos: 5633 | RESUMEN: 7806
+   [DIF] AÑOS: Crudos=17 años, RESUMEN=23 años
+              RESUMEN tiene 6 años adicionales
+
+[+] RIO NUEVO (Hoja: RioNuevo)
+--------------------------------------------------------------------------------
+   [DIF] INICIO: RESUMEN tiene 5.1 años mas de datos historicos
+              RESUMEN: 1974-10-01 | Crudos: 1979-11-01
+   [OK] FIN: Ambos coinciden (2025-10-23)
+   [DIF] REGISTROS: Diferencia de -1269 registros (-8.9%)
+                 Crudos: 12940 | RESUMEN: 14209
+   [DIF] AÑOS: Crudos=47 años, RESUMEN=52 años
+              RESUMEN tiene 5 años adicionales
+
+[+] SAN PEDRITO - AUT (Hoja: SanPedrito)
+--------------------------------------------------------------------------------
+   [OK] CRUDOS: 7658 registros desde 2004-12-04
+   [!] RESUMEN: Error o sin mapeo
+
+[+] SITIO NUEVO (Hoja: SitioNuevo)
+--------------------------------------------------------------------------------
+   [DIF] INICIO: RESUMEN tiene 24.4 años mas de datos historicos
+              RESUMEN: 1979-03-01 | Crudos: 2003-07-14
+   [OK] FIN: Ambos coinciden (2026-01-18)
+   [DIF] REGISTROS: Diferencia de -7708 registros (-51.0%)
+                 Crudos: 7396 | RESUMEN: 15104
+   [DIF] AÑOS: Crudos=24 años, RESUMEN=48 años
+              RESUMEN tiene 24 años adicionales
+
+[+] TENERIFE (Hoja: Tenerife)
+--------------------------------------------------------------------------------
+   [DIF] INICIO: RESUMEN tiene 5.5 años mas de datos historicos
+              RESUMEN: 1973-10-01 | Crudos: 1979-04-01
+   [OK] FIN: Ambos coinciden (2026-02-09)
+   [DIF] REGISTROS: Diferencia de -1565 registros (-11.0%)
+                 Crudos: 12614 | RESUMEN: 14179
+   [DIF] AÑOS: Crudos=48 años, RESUMEN=54 años
+              RESUMEN tiene 6 años adicionales
+
+========================================================================================================================
+RESUMEN GENERAL DE HALLAZGOS
+========================================================================================================================
+
+[ESTADISTICAS]
+  Total estaciones: 18
+  Datos identicos: 0
+  Con diferencias o errores: 18
+  Errores de lectura: 2
+
+[HALLAZGO] Estaciones donde RESUMEN tiene mas datos historicos:
+    - ARMENIA: 9.3 años adicionales
+    - CALAMAR: 13.5 años adicionales
+    - COYONGAL: 4.8 años adicionales
+    - EL BANCO - AUT: 11.4 años adicionales
+    - EL CONTENTO: 28.5 años adicionales
+    - LAS AGUADAS: 6.5 años adicionales
+    - LAS PALOMAS: 7.6 años adicionales
+    - LA GLORIA23217060: 19.8 años adicionales
+    - MAGANGUE: 6.5 años adicionales
+    - PENONCITO: 10.5 años adicionales
+    - PLATO MAGDALENA AUT: 2.8 años adicionales
+    - PUERTO WILCHES: 6.2 años adicionales
+    - RIO NUEVO: 5.1 años adicionales
+    - SITIO NUEVO: 24.4 años adicionales
+    - TENERIFE: 5.5 años adicionales
+
+========================================================================================================================

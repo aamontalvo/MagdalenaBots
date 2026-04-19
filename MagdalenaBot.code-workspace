@@ -1,0 +1,53 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.git": true,
+      "**/.DS_Store": true,
+      "**/__pycache__": true,
+      "**/*.pyc": true,
+      "**/.venv": true,
+      "**/node_modules": true
+    },
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+    "python.analysis.extraPaths": ["${workspaceFolder}/src"],
+    "editor.formatOnSave": true,
+    "editor.rulers": [88, 120],
+    "files.trimTrailingWhitespace": true
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-python.python",
+      "ms-python.vscode-pylance",
+      "charliermarsh.ruff",
+      "ms-toolsai.jupyter",
+      "github.copilot"
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Python: Current File",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${file}",
+        "console": "integratedTerminal",
+        "cwd": "${workspaceFolder}"
+      },
+      {
+        "name": "Python: MagdalenaBot CLI",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/magdalenabot.py",
+        "console": "integratedTerminal",
+        "args": ["--interactive"],
+        "cwd": "${workspaceFolder}"
+      }
+    ]
+  }
+}

@@ -1,259 +1,422 @@
 # Session Continuity - MagdalenaBot Project
 
-## Estado Actual del Proyecto (Marzo 2026)
+## Estado Actual del Proyecto (Abril 2026)
 
-### Resumen de Actividades Realizadas
+### Resumen Ejecutivo
 
-Este skill documenta el estado completo del proyecto de análisis hidrológico del Río Magdalena para permitir la continuación del trabajo en sesiones futuras sin pérdida de contexto.
+Proyecto de análisis hidrológico del Río Magdalena - Sistema de Imputación v4.2 completado con prevención de data leakage, 90 figuras de cartillas generadas y repositorio Git inicializado.
 
 ---
 
-## 1. ESTRUCTURA DE DIRECTORIOS
+## 1. ESTRUCTURA DE DIRECTORIOS ACTUALIZADA
 
 ```
 MagdalenaBot/
 ├── backend/
-│   ├── data/
-│   │   ├── raw/RawData/SERIE NIVELES IDEAM A 2026/    # Datos originales Excel
-│   │   └── processed/imputation/                       # Datos imputados CSV
-│   │       ├── Datos_Imputados_v3.csv                  # Serie completa (23.7 MB)
-│   │       ├── Tabla_I1_Resumen_Imputacion_v3.csv      # Resumen por estación
-│   │       └── Tabla_I2_Modelos_HH_v3.csv              # Modelos H-H aplicados
-│   └── scripts/
-├── docs/
-│   ├── contenido-informe.md                            # Informe técnico principal
-│   └── informe_cuenta_cobro_marzo_2026.md              # Resumen para cobro
-├── informes/
-│   ├── imputacion/                                     # Figuras H-H y esquemas
-│   │   ├── Figura_5_1_Esquema_Imputacion.png
-│   │   ├── Figura_HH_*_quadratic.png                   # 15 figuras H-H
-│   │   └── Tablas CSV de resultados
-│   └── estaciones/                                     # Figuras por estación
-│       ├── CALAMAR/                                    # 5 figuras
-│       └── BARBOSA/                                    # 5 figuras
-└── src/analysis/
-    ├── imputation_system_v3.py                         # Sistema de imputación
-    ├── generate_station_figures.py                     # Generador de figuras
-    └── generate_diagram.py                             # Generador de flujogramas
+│   └── data/
+│       └── raw/RawData/SERIE NIVELES IDEAM A 2026/    # Datos originales Excel
+├── Informes/
+│   └── imputacion/                                     # Figuras y datos imputados
+│       ├── Datos_Imputados_v3.csv                      # Serie completa imputada
+│       ├── Tabla_I1_Resumen_Imputacion_v3.csv          # Resumen por estación
+│       ├── Tabla_I2_Modelos_HH_v3.csv                  # Modelos H-H aplicados
+│       ├── Figura_5_1_Esquema_Imputacion.excalidraw    # Diagrama del sistema
+│       ├── Figura_5_1_Esquema_Imputacion.png           # Render del diagrama
+│       └── Curvas_HH_v4_2/                             # Gráficas H-H (15 pares)
+├── cartillas_estaciones/
+│   ├── v4_2/                                          # 18 carpetas con 5 figuras cada una
+│   │   ├── CALAMAR/                                   # Fig1-5
+│   │   ├── BARBOSA/                                   # Fig1-5
+│   │   ├── ... (16 estaciones más)
+│   │   └── PUERTO_WILCHES/                            # Fig1-5
+│   └── generar_cartillas_v4_2_corregido.py            # Script generador
+├── src/analysis/
+│   ├── imputation_system_v3.py                        # Sistema de imputación
+│   ├── generate_station_figures.py                    # Generador de figuras
+│   └── generate_diagram.py                            # Generador de flujogramas
+├── .kimi/skills/
+│   ├── excalidraw-diagram/                            # Skill para diagramas
+│   └── cartillas-estaciones/                          # Skill para cartillas
+└── .git/                                              # Repositorio inicializado
 ```
 
 ---
 
-## 2. DATOS CLAVE DEL PROYECTO
+## 2. SISTEMA DE IMPUTACIÓN v4.2 - ACTUALIZADO ✅
 
-### 2.1 Estaciones Procesadas (18 total)
+### 2.1 Arquitectura del Sistema (3 Niveles Principales)
 
-| Estación | Zona | Cobertura | Estado | Mejor Modelo H-H |
-|----------|------|-----------|--------|------------------|
-| CALAMAR | Baja | 99.4% | ✅ Aprobada | Weibull (R²=0.976) |
-| BARBOSA | Baja | 99.8% | ✅ Aprobada | Pearson III (R²=0.910) |
-| TENERIFE | Baja | 99.9% | ✅ Aprobada | Weibull (R²=0.960) |
-| PLATO | Baja | 100.0% | ✅ Aprobada | Weibull (R²=0.795) |
-| MAGANGUE | Baja | 99.8% | ✅ Aprobada | Weibull (R²=0.976) |
-| COYONGAL | Baja | 100.0% | ✅ Aprobada | Weibull (R²=0.883) |
-| RIO NUEVO | Media | 98.7% | ✅ Aprobada | Weibull (R²=0.917) |
-| LAS PALOMAS | Media | 98.1% | ✅ Aprobada | Weibull (R²=0.921) |
-| LAS AGUADAS | Media | 99.6% | ✅ Aprobada | Weibull (R²=0.979) |
-| EL BANCO | Media | 98.2% | ✅ Aprobada | Weibull (R²=0.981) |
-| PEÑONCITO | Media | 98.4% | ✅ Aprobada | Weibull (R²=0.809) |
-| LA GLORIA | Alta | 100.0% | ✅ Aprobada | Weibull (R²=0.824) |
-| EL CONTENTO | Alta | 91.5% | ✅ Aprobada | Weibull (R²=0.763) |
-| SITIO NUEVO | Alta | 95.4% | ✅ Aprobada | Weibull (R²=0.828) |
-| PUERTO WILCHES | Alta | 99.2% | ✅ Aprobada | Weibull (R²=0.814) |
-| ARMENIA | Media | 77.9% | ⚠️ Marginal | Sin modelo (sin donante) |
-| GAMARRA_AUT | Alta | 93.0% | ❌ Excluida | Serie corta (2011-2023) |
-| SAN PEDRITO | Baja | 45.4% | ❌ Excluida | Estación terminal |
+**CLARIFICACIÓN IMPORTANTE**: El sistema tiene **3 niveles principales**, donde L2 tiene **2 sub-niveles** basados en la calidad de R²:
 
-### 2.2 Resultados de Imputación
+| Nivel | Método | R² Umbral | Valores Imputados | Nivel_Imputacion |
+|-------|--------|-----------|-------------------|------------------|
+| **Nivel 1** | Interpolación local | N/A | 1,005 (0.3%) | 1 |
+| **Nivel 2 (L2)** | H-H Cuadrática (Alta confianza) | **R² ≥ 0.95** | 8,227 (2.7%) | 2 |
+| **Nivel 2 (L3)** | H-H Cuadrática (Media confianza) | **0.75 ≤ R² < 0.95** | 17,793 (5.8%) | 3 |
+| **Nivel 4** | missForest / Extrapolación | N/A | 5,363 (1.8%) | 4 |
+| **Total** | - | - | **32,388 (10.6%)** | - |
 
-- **Total registros procesados**: 326,480
-- **Datos originales**: 261,055 (80.0%)
-- **Imputados Nivel 1**: 970 valores
-- **Imputados Nivel 2**: 38,641 valores
-- **Cobertura promedio**: 94.13%
+**NOTA CRÍTICA**: L2 y L3 usan **el mismo método matemático** (ecuación cuadrática con una estación donante). La diferencia es puramente de **clasificación por calidad de correlación**:
+- **L2**: Estaciones con correlación excelente (Tenerife: R²=0.960, Magangue: R²=0.976)
+- **L3**: Estaciones con correlación buena/media (Barbosa, Rio Nuevo, Las Palomas, Coyongal, Peñoncito, Plato)
+
+### 2.2 Estaciones Clasificadas por Nivel de Imputación
+
+| Estación | Nivel | R² | Donante | Registros Imputados |
+|----------|-------|-----|---------|---------------------|
+| **TENERIFE** | L2 (High) | 0.960 | Calamar | 4,859 |
+| **MAGANGUE** | L2 (High) | 0.976 | Calamar | 3,368 |
+| **BARBOSA** | L3 (Med) | 0.910 | Calamar | 4,293 |
+| **RIO NUEVO** | L3 (Med) | 0.917 | Las Aguadas | 4,165 |
+| **LAS_PALOMAS** | L3 (Med) | 0.921 | Las Aguadas | 3,032 |
+| **COYONGAL** | L3 (Med) | 0.883 | Barbosa | 2,749 |
+| **PEÑONCITO** | L3 (Med) | 0.809 | El Banco | 1,837 |
+| **PLATO** | L3 (Med) | 0.795 | Tenerife | 1,717 |
+
+**Estaciones SIN imputación L2/L3** (solo Original + L1 + L4):
+- Armenia, Calamar, El Banco, El Contento, Gamarra Aut, La Gloria, Las Aguadas, Puerto Wilches, San Pedrito, Sitio Nuevo
+
+### 2.3 HARD RULE Implementado
+
+> **Nunca imputar fuera del rango original de cada estación**
+
+Ejemplo: La Gloria solo se imputa entre 1991-04-21 y 2026-01-18
 
 ---
 
-## 3. SCRIPTS Y FUNCIONALIDADES
+## 3. CARTILLAS DE ESTACIONES v4.2 - COMPLETADAS ✅
 
-### 3.1 imputation_system_v3.py
-**Propósito**: Sistema completo de imputación de 3 niveles
+### 3.1 Estructura de Figuras por Estación
 
-**Características**:
-- Nivel 1: Interpolación local para gaps ≤ 3 días
-- Nivel 2: Curvas H-H comparando lineal vs cuadrático (R² ≥ 0.75)
-- Nivel 3: Multi-donante para casos especiales
-- Selección automática del mejor modelo por AIC
+**Ruta**: `cartillas_estaciones/v4_2/[ESTACION]/`
 
-**Uso**:
+| Figura | Nombre | Datos Usados | Estado |
+|--------|--------|--------------|--------|
+| **Fig1** | Serie_Tiempo | Imputados v4.2 | ✅ Actualizada (10-Abr) |
+| **Fig2** | Violin_Mensual | Originales IDEAM | ✅ OK |
+| **Fig3** | Curva_Duracion | Imputados v4.2 | ✅ Regenerada (10-Abr) |
+| **Fig4** | Curvas_Excedidos | Imputados v4.2 | ✅ Regenerada (10-Abr) |
+| **Fig5** | Ajuste_Distribuciones | Originales IDEAM | ✅ OK |
+
+### 3.2 Especificaciones de Figuras (Actualizadas 09-Abril-2026)
+
+#### Fig1 - Serie de Tiempo ✅ **ACTUALIZADA (10-Abril-2026)**
+- Línea negra continua con alpha=0.85
+- **Eje X**: Años cada 5 años, ticks secundarios anuales (gris claro)
+- **Anotación**: 2 líneas compactas:
+  - "Periodo: YYYY-YYYY Total: XX,XXX registros"
+  - "Medidos: XX.X% | Imputados: XX.X%"
+- **Ejes**: X="Fecha", Y="Cota (m.s.n.m.)"
+- Grid suave (alpha=0.3)
+
+#### Fig2 - Violin Mensual
+- Violin plot gris claro
+- **Leyenda**: Media (rojo), Mediana (negro grueso)
+- Ejes en español
+
+#### Fig3 - Curva de Duración ✅ **ACTUALIZADA (10-Abril-2026)**
+- Curva principal azul (#1f77b4)
+- **Marcadores**: Círculos blancos con borde negro en P50, P90, P95, P100
+- **Anotaciones**: Cajas con valores (ej: "P50: 5.32 m")
+- Sin líneas de referencia Q95 o P50
+- Título: "Curva de Duracion - [ESTACION]" (mayúsculas)
+
+#### Fig4 - Curvas de Frecuencia de Niveles Excedidos ✅ **ACTUALIZADA (10-Abril-2026)**
+- **REGLA CRÍTICA**: Excluir **29 de febrero** de TODOS los cálculos
+- **Colores**:
+  - MAX/MIN: Negro
+  - 5%: Rojo oscuro (#8B0000)
+  - 25%: Verde oliva (#6B8E23)
+  - 50%: Negro grueso (3px)
+  - 75%: Azul claro (#5DADE2)
+  - 95%: Naranja (#D35400)
+- **Etiquetas**: A la derecha del plot (x=370), alineadas con cada curva
+- **Título**: "Fig4. Curvas de Frecuencia de Niveles Excedidos - [ESTACION]"
+- **Ejes**: X="Mes", Y="Cota (m)"
+
+#### Fig5 - Ajuste de Distribuciones
+- Histograma: Gris claro con borde gris
+- Curvas en escala de grises:
+  - Normal: Negro sólido
+  - Pearson III: Negro dashed
+  - Weibull: Negro dotted
+- Q-Q plot con puntos grises
+
+### 3.3 Figuras Adicionales Generadas (10-Abril-2026)
+
+**Boxplot General**: `cartillas_estaciones/Figura_3_1_Boxplot_Cuencas_18_ESTACIONES.png`
+- 18 estaciones ordenadas geograficamente (aguas abajo → arriba)
+- División por cuencas: Baja (7), Media (6), Alta (5)
+- Escala de grises con separadores entre cuencas
+- Incluye San Pedrito al inicio
+
+**Tablas de Imputación**: `cartillas_estaciones/v4_2/Grafica_Imputados_por_Metodo_Estacion.png`
+- Barras apiladas por método (L1, L2, L3, L4)
+- 18 estaciones
+- Total: 32,388 datos imputados (10.6%)
+
+### 3.4 Archivos de Resumen Generados (09-Abril-2026)
+
+**Excel**: `cartillas_estaciones/resumen de graficas.xlsx`
+- **Hoja**: "resumen frecuencia de niveles excedidos"
+- **Formato**: Long (tidy data)
+- **Columnas**: dia_anio (Jan-01), nombre_estacion, max, p95, p75, p50, p25, p5, min
+- **Registros**: 6,571 (365 días × 18 estaciones - Calamar tiene 366)
+- **Script**: `cartillas_estaciones/generar_resumen_excel.py`
+
+### 3.3 Comando de Generación
+
 ```bash
-cd src/analysis
-py imputation_system_v3.py
+cd cartillas_estaciones
+uv run --with pandas --with numpy --with matplotlib --with scipy python generar_cartillas_v4_2_corregido.py
 ```
 
-**Salidas**: `backend/data/processed/imputation/`
+**Salida**: 90 figuras PNG (5 × 18 estaciones)
 
-### 3.2 generate_station_figures.py
-**Propósito**: Generar figuras de análisis por estación
+---
 
-**Figuras generadas por estación**:
-1. Fig1: Serie de tiempo de cotas (línea negra, grid secundario)
-2. Fig2: Distribución mensual multianual (violinplot + boxplot + media)
-3. Fig3: Curva de duración (percentiles vs cotas)
-4. Fig4: Curvas de frecuencias de cotas excedidas (max/min gris, P50 punteado, 2025 azul)
-5. Fig5: Ajuste de distribuciones PDF (top 3 por AIC + Q-Q plot)
+## 4. REPOSITORIO GIT - ESTADO ACTUAL
 
-**Distribuciones probadas**: Weibull, Log-Normal, Gamma, Gumbel, Pearson III, Normal
+### Commits Realizados
 
-**Uso**:
-```python
-# En el script, modificar la lista de estaciones en main()
-stations = ['CALAMAR', 'BARBOSA']  # Agregar más estaciones según necesidad
-
-py generate_station_figures.py
+```
+546bbda docs: Skill para generacion de cartillas de estaciones
+d8751d9 fix: Correcciones en cartillas v4.2 segun feedback
+bcd4e76 feat: Cartillas de estaciones v4.2 - 90 figuras generadas
+a503c42 feat: Sistema de Imputacion v4.2 con prevencion de data leakage
 ```
 
-**Salidas**: `informes/estaciones/[ESTACION]/`
+### Configuración
+- **Remote**: `https://github.com/aamontalvo/MagdalenaBots.git`
+- **Branch**: `main`
+- **Status**: Listo para push manual
 
-### 3.3 generate_diagram.py
-**Propósito**: Generar flujograma del sistema de imputación
-
-**Uso**:
+### Comando para Push
 ```bash
-py generate_diagram.py
+cd "C:\Users\alexa\Documents\PERSONAL PROJECTS\MagdalenaBot"
+git push -u origin main
 ```
 
-**Salida**: `informes/imputacion/Figura_5_1_Esquema_Imputacion.png`
+---
+
+## 5. SKILLS ACTUALIZADOS
+
+### 5.1 excalidraw-diagram
+- Instalado en `.kimi/skills/excalidraw-diagram/`
+- Renderer de diagramas profesionales
+- Usado para: `Figura_5_1_Esquema_Imputacion.excalidraw`
+
+### 5.2 cartillas-estaciones
+- Creado en `.kimi/skills/cartillas-estaciones/`
+- Documentación de estructura de 5 figuras
+- Especificaciones de colores y formatos
 
 ---
 
-## 4. DOCUMENTACIÓN TÉCNICA
+## 6. TAREAS PENDIENTES
 
-### 4.1 Informe Principal
-**Archivo**: `docs/contenido-informe.md`
+### 🔴 Prioridad Alta - EN CURSO
 
-**Secciones completadas**:
-- Sección 5: Imputación de datos faltantes (3 niveles, metodología, resultados)
-- Sección 6: Análisis por estación (Calamar y Barbosa con 5 figuras cada una)
+1. **Redacción del Informe Técnico**
+   - Reestructurar secciones según nuevo formato
+   - Incluir metodología v4.2 con prevención de data leakage
+   - Describir el sistema de cascada de 4 niveles
+   - **Estado**: PENDIENTE - Empezar desde cero
 
-### 4.2 Informe para Cobro
-**Archivo**: `docs/informe_cuenta_cobro_marzo_2026.md`
+2. **Validación de Figuras Generadas**
+   - Revisar visualmente las 90 figuras generadas
+   - Verificar que cumplen especificaciones
+   - Confirmar etiquetas fuera del box en Fig4
+   - **Estado**: PENDIENTE - Revisión manual
 
-**Contenido**: Resumen ejecutivo, detalle de actividades, estadísticas consolidadas
+### 🟡 Prioridad Media
 
----
+3. **Curvas H-H Adicionales**
+   - Generar figuras para todos los pares objetivo-donante
+   - Incluir comparación lineal vs cuadrático
+   - Guardar en `Informes/imputacion/Curvas_HH_v4_2/`
+   - **Estado**: Script listo, pendiente ejecución
 
-## 5. TAREAS PENDIENTES / PRÓXIMOS PASOS
+4. **Documentación de Datos**
+   - Crear archivo Excel con metadatos de imputación
+   - Columnas: fecha, estación, nivel, tipo_dato, metodología, donante
+   - **Estado**: PENDIENTE
 
-### Prioridad Alta
-1. **Generar figuras para estaciones restantes**
-   - Actualmente solo Calamar y Barbosa tienen figuras completas
-   - 16 estaciones adicionales necesitan generación de figuras
-   - Modificar `generate_station_figures.py` lista de estaciones
+### 🟢 Prioridad Baja
 
-2. **Validación de modelos H-H con R² < 0.75**
-   - Revisar si hay estaciones que necesiten modelos alternativos
-   - Considerar relajación de umbral para casos especiales
-
-### Prioridad Media
-3. **Análisis de tendencias**
-   - Aplicar pruebas de Mann-Kendall a series completadas
+5. **Análisis de Tendencias**
+   - Pruebas de Mann-Kendall a series completadas
    - Identificar puntos de cambio (Pettitt)
-   - Generar figuras de tendencias por estación
+   - **Estado**: PENDIENTE
 
-4. **Análisis de frecuencia**
-   - Calcular curvas de recurrencia para eventos extremos
-   - Ajustar distribuciones Gumbel/Weibull para máximos anuales
-   - Estimar niveles de diseño (Q5, Q10, Q50, Q100 años)
-
-### Prioridad Baja
-5. **Mejoras visuales**
-   - Estandarizar colores entre figuras
-   - Agregar mapa de ubicación de estaciones
-   - Crear figuras comparativas entre zonas
+6. **Mejoras Visuales Adicionales**
+   - Mapa de ubicación de estaciones
+   - Figuras comparativas entre zonas
+   - **Estado**: PENDIENTE
 
 ---
 
-## 6. PARÁMETROS TÉCNICOS IMPORTANTES
+## 7. PARÁMETROS TÉCNICOS
 
-### Criterios de Calidad
-- **R² mínimo para H-H**: 0.75
-- **Correlación mínima donante**: r ≥ 0.85
-- **Máximo gap Nivel 1**: 3 días
-- **Mínimo años para análisis**: 30 años
+### Criterios de Calidad v4.2 (Actualizados)
 
-### Configuración de Figuras
-- **Colores serie tiempo**: Negro (único)
-- **Colores violinplot**: Gris claro (#E0E0E0) con boxplot negro
-- **Colores curvas excedidos**: Max/Min gris sólido, P50 gris punteado, 2025 azul (#0D47A1)
-- **Distribuciones a probar**: Weibull, Log-Normal, Gamma, Gumbel, Pearson III, Normal
-- **Criterio selección distribución**: Mínimo AIC
+| Parámetro | Valor | Descripción |
+|-----------|-------|-------------|
+| **R² mínimo general** | ≥ 0.75 | Umbral para aceptar modelo H-H |
+| **R² para L2 (High)** | ≥ 0.95 | Alta confianza (Tenerife, Magangue) |
+| **R² para L3 (Med)** | 0.75 - 0.95 | Media confianza (6 estaciones) |
+| **Correlación mínima** | r ≥ 0.85 | Para considerar par donante |
+| **n mínimo entrenamiento** | ≥ 50 | Datos concurrentes requeridos |
+| **Gap máximo Nivel 1** | ≤ 3 días | Para interpolación local |
+| **Pesos interpolación** | [0.1, 0.2, 0.4, 0.2, 0.1] | Kernel ponderado |
+| **Margen eje Y Fig4** | ±2m | Margen fijo (no porcentaje) |
+| **Exclusión año bisiesto** | 29-feb | Siempre excluir de análisis diarios |
 
-### Rutas Críticas
-```python
-# Datos procesados
-DATA_PATH = 'backend/data/processed/imputation/Datos_Imputados_v3.csv'
+### Datos Clave
+- **Total registros**: 304,443 (post-imputación)
+- **Datos originales**: 272,055 (89.4%)
+- **Datos imputados**: 32,388 (10.6%)
+- **Cobertura promedio**: 95.5%
 
-# Figuras por estación
-OUTPUT_FIGURES = 'informes/estaciones/[ESTACION]/'
+---
 
-# Datos raw
-RAW_DATA = 'backend/data/raw/RawData/SERIE NIVELES IDEAM A 2026/'
+## 8. COMANDOS RÁPIDOS
+
+### Verificar estado del proyecto
+```bash
+cd "C:\Users\alexa\Documents\PERSONAL PROJECTS\MagdalenaBot"
+git status
+git log --oneline -5
 ```
 
----
-
-## 7. COMANDOS RÁPIDOS
-
-### Regenerar figuras para todas las estaciones
-```bash
-cd src/analysis
-# Editar generate_station_figures.py -> stations = ['ESTACION1', 'ESTACION2', ...]
-py generate_station_figures.py
+### Listar figuras generadas
+```powershell
+Get-ChildItem cartillas_estaciones/v4_2 -Recurse *.png | Measure-Object
 ```
 
 ### Verificar datos imputados
 ```python
 import pandas as pd
-df = pd.read_csv('backend/data/processed/imputation/Datos_Imputados_v3.csv')
-print(df.groupby('station')['level'].count())
-```
-
-### Listar figuras generadas
-```powershell
-cd informes/estaciones
-Get-ChildItem -Recurse *.png
+df = pd.read_csv('Informes/imputacion/Datos_Imputados_v3.csv')
+print(df['data_source'].value_counts())
 ```
 
 ---
 
-## 8. NOTAS ADICIONALES
+## 9. NOTAS CRÍTICAS
 
-### Cambios Recientes Importantes
-- ✅ Figura 1 (serie tiempo): Cambiada a línea negra única sin leyenda de colores
-- ✅ Figura 4 (curvas excedidos): Max/Min en gris sólido, P50 punteado, solo 2025 en azul
-- ✅ Todos los ejes Y cambiados de "Nivel" a "Cota (m.s.n.m.)"
-- ✅ Grid secundario agregado a Figura 1
+### Cambios Importantes Recientes (Abril 2026)
 
-### Estaciones Requieren Atención Especial
-- **Armenia**: Cobertura 77.9%, sin modelo H-H aceptable
-- **San Pedrito**: Cobertura 45.4%, estación terminal sin donantes
-- **Gamarra Aut**: Serie corta (2011-2023), excluida de análisis histórico
+✅ **Sistema v4.2**: Implementado cascada de 4 niveles con prevención de data leakage
+✅ **Fase 1**: Entrenamiento de modelos usando SOLO datos originales
+✅ **Cartillas**: 90 figuras generadas con formato corregido
+✅ **Git**: Repositorio inicializado con 4 commits
+✅ **Skills**: Excalidraw y cartillas-estaciones documentados
+✅ **Caudales v1 (16-Abril-2026)**: Análisis de caudales para 11 estaciones con series imputadas 1940-2026, 217,905 registros totales (89.2% originales, 10.8% imputados), figuras técnicas por estación y cuantiles extremos
 
-### Mejor Ajuste por Estación (Procesadas)
-- **Calamar**: Weibull (AIC=83,050.49)
-- **Barbosa**: Pearson III (AIC=75,233.45)
-- **Mayoría**: Weibull es el mejor ajuste (13 de 15 estaciones)
+### Estaciones que Requieren Atención
+
+| Estación | Issue | Acción Requerida |
+|----------|-------|------------------|
+| **Armenia** | Sin donante con r ≥ 0.85 | Documentar en informe |
+| **Gamarra Aut** | Serie corta (2013-2026) | Limitar análisis histórico |
+| **San Pedrito** | 45.4% cobertura | Excluir o usar solo originales |
+
+### Próxima Sesión - Prioridades
+
+1. **Empezar redacción del informe técnico** (Sección 5: Imputación)
+2. **Revisar visualmente las 90 figuras** generadas
+3. **Hacer push a GitHub** cuando la conexión lo permita
 
 ---
 
-## 9. CONTACTO Y REFERENCIAS
+## 10. CONTACTO Y METADATOS
 
-**Fecha de última actualización**: Marzo 2026
-**Responsable**: Sistema de Análisis Hidrológico MagdalenaBot
-**Versión del sistema**: v3.0
+**Fecha de última actualización**: 10 de Abril 2026  
+**Versión del sistema**: v4.2  
+**Total figuras generadas**: 90 (18 estaciones × 5 figuras)  
+**Commits en git**: 4 (pendientes push)  
+**Skills activos**: excalidraw-diagram, cartillas-estaciones, hydrological-processing  
 
-Para continuar el trabajo:
-1. Verificar estado actual con `git status` o listando archivos
-2. Revisar este skill para contexto completo
-3. Ejecutar scripts según necesidad (ver sección 6)
+---
+
+## 11. RESUMEN DE SESIÓN 09-ABRIL-2026
+
+### ✅ Logros de Hoy
+
+1. **Fig4 Corregidas**: Regeneradas para 18 estaciones con:
+   - Exclusión de 29 de febrero
+   - Margen de eje Y fijo ±2m
+   - Etiquetas fuera del box
+   - Línea de corte en día 365
+
+2. **Excel de Resumen**: Creado archivo con percentiles de todas las estaciones
+   - Formato long (6,571 registros)
+   - Columnas: dia_anio, nombre_estacion, max, p95, p75, p50, p25, p5, min
+
+3. **Clarificación L2 vs L3**: Investigación confirmó que ambos usan el mismo método
+   - L2: R² ≥ 0.95 (Alta confianza)
+   - L3: 0.75 ≤ R² < 0.95 (Media confianza)
+   - Ambos: Ecuación cuadrática con una estación donante
+
+4. **Skill Hydrological-Processing**: Actualizado con reglas críticas
+   - Exclusión de 29 de febrero
+   - Arquitectura correcta de imputación
+
+### 📋 Para la Siguiente Sesión
+
+**Prioridad 1**: Redacción del informe técnico (metodología de imputación)
+**Prioridad 2**: Revisar visualmente las 90 figuras generadas
+**Prioridad 3**: Hacer push a GitHub
+
+---
+
+## 12. RESUMEN DE SESIÓN 10-ABRIL-2026
+
+### ✅ Logros de Hoy
+
+1. **Figuras 3 y 4 Regeneradas**: Todas las 18 estaciones con formato exacto v2:
+   - Fig3: Curva de duración con marcadores en P50, P90, P95, P100
+   - Fig4: Curvas de frecuencia con etiquetas a la derecha
+   - Colores y estilos según especificaciones aprobadas
+
+2. **Figura 1 Corregida**: Serie de tiempo con:
+   - Eje X: Años cada 5 años con ticks secundarios anuales
+   - Caja de anotación compacta (2 líneas)
+   - Eje Y: "Cota (m.s.n.m.)"
+   - 17 estaciones actualizadas (excluyendo San Pedrito que ya estaba correcta)
+
+3. **Boxplot General Generado**: Figura 3.1 con 18 estaciones
+   - División por cuencas: Baja (7), Media (6), Alta (5)
+   - Escala de grises con separadores visuales
+   - Incluye La Gloria correctamente
+
+4. **Tablas de Imputación Creadas**:
+   - Tabla por métodos de imputación (L1, L2, L3, L4) por estación
+   - Gráfica de barras apiladas por método
+   - Resumen: 32,388 datos imputados (10.6% del total)
+
+5. **Verificación de Datos**: Confirmado uso de datos v4.2 en todas las figuras
+
+### 📁 Archivos Generados Hoy
+
+```
+cartillas_estaciones/
+├── v4_2/
+│   ├── [18 estaciones]/
+│   │   ├── Fig1_Serie_Tiempo_*.png (regeneradas)
+│   │   ├── Fig3_Curva_Duracion_*.png (regeneradas)
+│   │   └── Fig4_Curvas_Excedidos_*.png (regeneradas)
+│   ├── Figura_3_1_Boxplot_Cuencas_18_ESTACIONES.png
+│   └── Grafica_Imputados_por_Metodo_Estacion.png
+```
+
+### 📋 Para la Siguiente Sesión
+
+**Prioridad 1**: Revisar visualmente las figuras generadas hoy  
+**Prioridad 2**: Redacción del informe técnico (metodología de imputación)  
+**Prioridad 3**: Hacer push a GitHub
+
+---
+
+**Para continuar**: Ver sección 12 (Resumen de Sesión más reciente) y Tareas Pendientes sección 6.

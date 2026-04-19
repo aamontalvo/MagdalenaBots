@@ -1,0 +1,41 @@
+{
+  "project": {
+    "name": "MagdalenaBot",
+    "version": "2.0.0",
+    "type": "hydrological-analysis",
+    "language": "spanish"
+  },
+  "environment": {
+    "python_version": "3.12",
+    "primary_language": "python",
+    "documentation_language": "spanish"
+  },
+  "paths": {
+    "data_raw": "data/raw",
+    "data_processed": "data/processed",
+    "figures": "informes/figuras",
+    "tables": "informes/tablas",
+    "reports": "informes",
+    "analysis_code": "src/analysis"
+  },
+  "conventions": {
+    "decimal_precision": 3,
+    "coordinate_format": "msnm",
+    "station_order": "downstream_to_upstream",
+    "color_scheme": {
+      "boxplots": "grayscale",
+      "heatmap": "Blues_r"
+    }
+  },
+  "stations": {
+    "total": 18,
+    "zones": {
+      "baja": ["SAN_PEDRITO", "CALAMAR", "TENERIFE", "PLATO", "MAGANGUE", "BARBOSA", "COYONGAL"],
+      "media": ["ARMENIA", "RIO_NUEVO", "LAS_PALOMAS", "LAS_AGUADAS", "EL_BANCO", "PENONCITO"],
+      "alta": ["LA_GLORIA", "GAMARRA_AUT", "EL_CONTENTO", "SITIO_NUEVO", "PUERTO_WILCHES"]
+    }
+  },
+  "protected_files": [
+    "informes/INFORME_NIVELES_IDEAM_2026.docx"
+  ]
+}

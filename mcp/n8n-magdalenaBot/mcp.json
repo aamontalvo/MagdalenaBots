@@ -1,0 +1,137 @@
+{
+  "name": "n8n-magdalenaBot",
+  "version": "1.0.0",
+  "description": "MCP Server for MagdalenaBot n8n integration - Hydrological analysis of Rio Magdalena",
+  "transport": {
+    "type": "http",
+    "url": "https://test.aichuann8n.com/mcp-server/http",
+    "headers": {
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OTBlYjJhYy0yMjM0LTQ2MzctODNjZi03OWYyMmEwOTcwMDAiLCJpc3MiOiJuOG4iLCJhdWQiOiJtY3Atc2VydmVyLWFwaSIsImp0aSI6IjYxOWI4NTgwLTdmNWEtNDA4NS05MzkzLTRkYTc5MGE4ZjIxNiIsImlhdCI6MTc3MDY1MzE0Mn0.Rf73coJYSPZxbu8KforGjnj-CaFcs8YLXbCe2Xr88d8",
+      "Content-Type": "application/json"
+    }
+  },
+  "tools": [
+    {
+      "name": "query_water_levels",
+      "description": "Execute SQL queries on water level measurements from Rio Magdalena stations. Use this for ALL data retrieval.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "PostgreSQL SELECT query. ALWAYS filter by station_id AND parameter='NivelMedioDiario'. Use parameters $1, $2 for security."
+          },
+          "parameters": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Query parameters to substitute $1, $2, etc."
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "name": "get_stations",
+      "description": "Get list of available hydrological stations with their IDs and metadata",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "calculate_monthly_probability",
+      "description": "Calculate monthly probability distribution (KDE) for water levels",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "station_id": {
+            "type": "string",
+            "description": "Station UUID (e.g., '011375ab-c1be-4fa4-aa97-be2f39483b34')"
+          },
+          "years": {
+            "type": "number",
+            "description": "Number of years to analyze (default: all available)"
+          }
+        },
+        "required": ["station_id"]
+      }
+    },
+    {
+      "name": "calculate_exceedance_frequency",
+      "description": "Calculate exceedance frequency curves for flood risk assessment",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "station_id": {
+            "type": "string",
+            "description": "Station UUID"
+          },
+          "threshold_percentiles": {
+            "type": "array",
+            "items": { "type": "number" },
+            "default": [10, 25, 50, 75, 90]
+          }
+        },
+        "required": ["station_id"]
+      }
+    },
+    {
+      "name": "calculate_duration_curve",
+      "description": "Calculate flow duration curve showing persistence of water levels",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "station_id": {
+            "type": "string",
+            "description": "Station UUID"
+          }
+        },
+        "required": ["station_id"]
+      }
+    },
+    {
+      "name": "send_analysis_email",
+      "description": "Send hydrological analysis results via email with CSV attachments",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Recipient email address"
+          },
+          "station_name": {
+            "type": "string",
+            "description": "Human-readable station name"
+          },
+          "station_id": {
+            "type": "string",
+            "description": "Station UUID"
+          },
+          "analysis_type": {
+            "type": "string",
+            "enum": ["monthly_probability", "exceedance_frequency", "duration_curve", "complete"]
+          },
+          "csv_data": {
+            "type": "object",
+            "description": "CSV content keyed by analysis name"
+          }
+        },
+        "required": ["email", "station_name", "station_id", "analysis_type", "csv_data"]
+      }
+    }
+  ],
+  "resources": [
+    {
+      "name": "stations",
+      "description": "List of hydrological stations in Rio Magdalena",
+      "uri": "supabase://stations",
+      "mimeType": "application/json"
+    },
+    {
+      "name": "water_level_measurements",
+      "description": "Historical water level measurements",
+      "uri": "supabase://water_level_measurements",
+      "mimeType": "application/json"
+    }
+  ]
+}

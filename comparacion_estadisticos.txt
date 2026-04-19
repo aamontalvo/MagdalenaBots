@@ -1,0 +1,154 @@
+========================================================================================================================
+COMPARACION DE ESTADISTICOS: DATOS CONVERTIDOS vs TABLA DE REFERENCIA
+========================================================================================================================
+
+RANGO DE FECHAS POR ESTACION (Datos Convertidos)
+----------------------------------------------------------------------------------------------------
+Estacion             Codigo       Registros    Inicio       Fin          Anos    
+----------------------------------------------------------------------------------------------------
+Puerto Wilches       23187010     7806         07-05-2003   11-09-2025   23      
+Sitio Nuevo          23187280     15104        01-03-1979   18-01-2026   48      
+El Contento          23217030     13447        01-09-1974   17-01-2026   53      
+La Gloria            23217060     11156        21-04-1991   18-01-2026   36      
+Gamarra Aut          23217080     4415         01-01-2013   18-01-2026   14      
+El Banco             25027020     18744        01-10-1972   09-02-2026   55      
+Penoncito            25027330     17097        01-10-1972   30-06-2025   54      
+Armenia              25027360     15020        01-02-1973   15-10-2025   53      
+Las Palomas          25027390     15688        01-08-1973   30-06-2025   53      
+Plato                25027450     14145        01-06-1976   31-12-2019   44      
+Las Aguadas          25027490     18749        01-04-1973   31-08-2025   53      
+Barbosa              25027530     14350        01-10-1973   20-12-2024   52      
+Rio Nuevo            25027630     14209        01-10-1974   23-10-2025   52      
+Magangue             25027680     15799        01-04-1973   30-12-2025   53      
+Coyongal             25027930     15726        01-03-1975   09-02-2026   52      
+Tenerife             29017010     14179        01-10-1973   09-02-2026   54      
+Calamar              29037020     21381        01-02-1967   09-02-2026   60      
+San Pedrito          29047070     14230        01-01-1979   31-12-2019   41      
+
+========================================================================================================================
+COMPARACION DE ESTADISTICOS
+========================================================================================================================
+
+Estacion           N Datos                  Media                    Std                 
+                          Ref       Conv        Dif        Ref       Conv        Dif      Ref     Conv      Dif
+----------------------------------------------------------------------------------------------------------------------------------
+San Pedrito             14230      14230          0      5.198      5.198     -0.000    1.690    1.690    0.000
+Calamar                 21381      21381          0      5.263      5.263      0.000    1.699    1.699   -0.000
+Tenerife                14179      14179          0      8.942      8.942     -0.000    1.853    1.853    0.000
+Plato                   14145      14145          0      9.287      9.287      0.000    1.868    1.868    0.000
+Magangue                15799      15799          0     15.434     15.434      0.000    1.630    1.630   -0.000
+Barbosa                 14350      14350          0     16.253     16.253      0.000    1.715    1.715    0.000
+Coyongal                15726      15726          0     17.901     17.901     -0.000    1.620    1.620   -0.000
+Armenia                 15020      15020          0     19.958     19.958      0.000    1.986    1.986   -0.000
+Rio Nuevo               14209      14209          0     21.603     21.603     -0.000    1.145    1.145   -0.000
+Las Palomas             15688      15688          0     22.713     22.713      0.000    1.160    1.160    0.000
+Las Aguadas             18749      18749          0     24.676     24.676     -0.000    1.409    1.409    0.000
+El Banco                18744      18744          0     25.913     25.913      0.000    1.393    1.393   -0.000
+Penoncito               17097      17097          0     26.498     26.498      0.000    1.559    1.559    0.000
+La Gloria               11156      11156          0     32.999     32.999     -0.000    1.307    1.307    0.000
+Gamarra Aut              4415       4415          0     36.412     36.412     -0.000    1.487    1.487   -0.000
+El Contento             13447      13447          0     39.846     39.846     -0.000    1.276    1.276   -0.000
+Sitio Nuevo             15104      15104          0     50.671     50.671      0.000    1.031    1.031   -0.000
+Puerto Wilches           7806       7806          0     63.680     63.680      0.000    0.882    0.882    0.000
+
+========================================================================================================================
+HALLAZGOS Y ANALISIS
+========================================================================================================================
+
+1. COINCIDENCIA DE REGISTROS:
+--------------------------------------------------------------------------------
+   [OK] San Pedrito: Coinciden exactamente (14230 registros)
+   [OK] Calamar: Coinciden exactamente (21381 registros)
+   [OK] Tenerife: Coinciden exactamente (14179 registros)
+   [OK] Plato: Coinciden exactamente (14145 registros)
+   [OK] Magangue: Coinciden exactamente (15799 registros)
+   [OK] Barbosa: Coinciden exactamente (14350 registros)
+   [OK] Coyongal: Coinciden exactamente (15726 registros)
+   [OK] Armenia: Coinciden exactamente (15020 registros)
+   [OK] Rio Nuevo: Coinciden exactamente (14209 registros)
+   [OK] Las Palomas: Coinciden exactamente (15688 registros)
+   [OK] Las Aguadas: Coinciden exactamente (18749 registros)
+   [OK] El Banco: Coinciden exactamente (18744 registros)
+   [OK] Penoncito: Coinciden exactamente (17097 registros)
+   [OK] La Gloria: Coinciden exactamente (11156 registros)
+   [OK] Gamarra Aut: Coinciden exactamente (4415 registros)
+   [OK] El Contento: Coinciden exactamente (13447 registros)
+   [OK] Sitio Nuevo: Coinciden exactamente (15104 registros)
+   [OK] Puerto Wilches: Coinciden exactamente (7806 registros)
+
+2. COMPARACION DE MEDIAS:
+--------------------------------------------------------------------------------
+   [OK] San Pedrito: Media casi identica (dif: -0.0003 m)
+   [OK] Calamar: Media casi identica (dif: +0.0000 m)
+   [OK] Tenerife: Media casi identica (dif: -0.0004 m)
+   [OK] Plato: Media casi identica (dif: +0.0000 m)
+   [OK] Magangue: Media casi identica (dif: +0.0003 m)
+   [OK] Barbosa: Media casi identica (dif: +0.0003 m)
+   [OK] Coyongal: Media casi identica (dif: -0.0002 m)
+   [OK] Armenia: Media casi identica (dif: +0.0003 m)
+   [OK] Rio Nuevo: Media casi identica (dif: -0.0004 m)
+   [OK] Las Palomas: Media casi identica (dif: +0.0002 m)
+   [OK] Las Aguadas: Media casi identica (dif: -0.0002 m)
+   [OK] El Banco: Media casi identica (dif: +0.0002 m)
+   [OK] Penoncito: Media casi identica (dif: +0.0001 m)
+   [OK] La Gloria: Media casi identica (dif: -0.0001 m)
+   [OK] Gamarra Aut: Media casi identica (dif: -0.0002 m)
+   [OK] El Contento: Media casi identica (dif: -0.0002 m)
+   [OK] Sitio Nuevo: Media casi identica (dif: +0.0004 m)
+   [OK] Puerto Wilches: Media casi identica (dif: +0.0001 m)
+
+3. COMPARACION DE DESVIACIONES ESTANDAR:
+--------------------------------------------------------------------------------
+   [OK] San Pedrito: Std similar (dif: +0.0003 m)
+   [OK] Calamar: Std similar (dif: -0.0001 m)
+   [OK] Tenerife: Std similar (dif: +0.0003 m)
+   [OK] Plato: Std similar (dif: +0.0001 m)
+   [OK] Magangue: Std similar (dif: -0.0003 m)
+   [OK] Barbosa: Std similar (dif: +0.0001 m)
+   [OK] Coyongal: Std similar (dif: -0.0001 m)
+   [OK] Armenia: Std similar (dif: -0.0002 m)
+   [OK] Rio Nuevo: Std similar (dif: -0.0002 m)
+   [OK] Las Palomas: Std similar (dif: +0.0003 m)
+   [OK] Las Aguadas: Std similar (dif: +0.0003 m)
+   [OK] El Banco: Std similar (dif: -0.0002 m)
+   [OK] Penoncito: Std similar (dif: +0.0004 m)
+   [OK] La Gloria: Std similar (dif: +0.0004 m)
+   [OK] Gamarra Aut: Std similar (dif: -0.0001 m)
+   [OK] El Contento: Std similar (dif: -0.0004 m)
+   [OK] Sitio Nuevo: Std similar (dif: -0.0004 m)
+   [OK] Puerto Wilches: Std similar (dif: +0.0002 m)
+
+4. LIMITES (MIN/MAX):
+--------------------------------------------------------------------------------
+   [OK] San Pedrito: Min/Max identicos
+   [OK] Calamar: Min/Max identicos
+   [OK] Tenerife: Min/Max identicos
+   [OK] Plato: Min/Max identicos
+   [OK] Magangue: Min/Max identicos
+   [OK] Barbosa: Min/Max identicos
+   [OK] Coyongal: Min/Max identicos
+   [OK] Armenia: Min/Max identicos
+   [OK] Rio Nuevo: Min/Max identicos
+   [OK] Las Palomas: Min/Max identicos
+   [OK] Las Aguadas: Min/Max identicos
+   [OK] El Banco: Min/Max identicos
+   [OK] Penoncito: Min/Max identicos
+   [OK] La Gloria: Min/Max identicos
+   [OK] Gamarra Aut: Min/Max identicos
+   [OK] El Contento: Min/Max identicos
+   [OK] Sitio Nuevo: Min/Max identicos
+   [OK] Puerto Wilches: Min/Max identicos
+
+========================================================================================================================
+CONCLUSIONES
+========================================================================================================================
+
+El analisis muestra que los datos convertidos del archivo Wide a Long mantienen
+una alta fidelidad con respecto a los estadisticos de referencia.
+
+- Estaciones analizadas: 18/18
+- Coincidencia en numero de registros (+-5): 18/18
+- Coincidencia en media (+-0.01 m): 18/18
+- El archivo Long esta listo para su uso en analisis
+
+========================================================================================================================

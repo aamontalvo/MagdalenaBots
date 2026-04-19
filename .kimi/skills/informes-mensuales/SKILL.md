@@ -167,12 +167,28 @@ Usar iconos para clasificación:
 
 ## Ubicación de Archivos
 
-Guardar informes en: `docs/informe_cuenta_cobro_[MES]_[AÑO].md`
+### Documentos de trabajo (proyecto MagdalenaBot)
+Guardar borradores en:
+- `docs/informe_cuenta_cobro_[MES]_[AÑO].md`
+- `docs/resumen_ejecucion_contractual_[MES]_[AÑO].md`
 
 Ejemplos:
 - `docs/informe_cuenta_cobro_febrero_2026.md`
 - `docs/informe_cuenta_cobro_marzo_2026.md`
 - `docs/informe_cuenta_cobro_abril_2026.md`
+
+### Documentos oficiales de entrega (proyecto MagdalenaRiver_Uninorte)
+Los informes finales se entregan como `.docx` en la estructura oficial de cuentas de cobro:
+
+**Informe detallado de actividades (largo):**
+- Ruta: `C:\Users\alexa\Documents\PERSONAL PROJECTS\MagdalenaRiver_Uninorte\CuentasCobro\2026\[MES]\Soporte Tecnico\`
+- Nombre de archivo observado: `INFORMEDETALLADO_ACTIVIDADES_[MES]_[AÑO].docx`
+- Ejemplo real: `INFORMEDETALLADO_ACTIVIDADES_MARZO_2026.docx`
+
+**Resumen de ejecución contractual / Informe de actividades (corto):**
+- Ruta: `C:\Users\alexa\Documents\PERSONAL PROJECTS\MagdalenaRiver_Uninorte\CuentasCobro\2026\[MES]\Entregables\`
+- Nombre de archivo observado: `7_InformeActividades_[MES][AÑO]_[N]de24__AlexanderMontalvo.docx`
+- Ejemplo real: `7_InformeActividades_Febrero2026_2de24__AlexanderMontalvo.docx`
 
 ## Sección 4: Ejecución Contractual (Resumen Corto)
 
@@ -202,8 +218,13 @@ Se relaciona a continuación las actividades realizadas por el contratista duran
 
 ### Ubicación de Archivos:
 
+**Borradores de trabajo:**
 - Informe detallado: `docs/informe_cuenta_cobro_[MES]_[AÑO].md`
 - Resumen ejecución contractual: `docs/resumen_ejecucion_contractual_[MES]_[AÑO].md`
+
+**Entregables oficiales (.docx):**
+- Informe detallado: `MagdalenaRiver_Uninorte\CuentasCobro\2026\[MES]\Soporte Tecnico\INFORMEDETALLADO_ACTIVIDADES_[MES]_[AÑO].docx`
+- Resumen contractual: `MagdalenaRiver_Uninorte\CuentasCobro\2026\[MES]\Entregables\7_InformeActividades_[MES][AÑO]_[N]de24__AlexanderMontalvo.docx`
 
 ## Checklist Pre-entrega
 
@@ -226,3 +247,5 @@ Antes de finalizar un informe, verificar:
 - Contrato: UN-OJ-2025-66227
 - BPIN: 2024000100122
 - Informe modelo: `docs/informe_cuenta_cobro_marzo_2026_FUSIONADO.md`
+- Ejemplo informe detallado oficial: `MagdalenaRiver_Uninorte\CuentasCobro\2026\Marzo\Soporte Tecnico\INFORMEDETALLADO_ACTIVIDADES_MARZO_2026.docx`
+- Ejemplo resumen contractual oficial: `MagdalenaRiver_Uninorte\CuentasCobro\2026\Febrero\Entregables\7_InformeActividades_Febrero2026_2de24__AlexanderMontalvo.docx`
