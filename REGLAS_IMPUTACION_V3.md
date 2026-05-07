@@ -1,34 +1,80 @@
-# REGLAS DE IMPUTACIÓN - Sistema v3.0
-## HARD RULE: Nunca imputar fuera del rango original de cada estación
+# REGLAS DE IMPUTACION - Sistema v3.0
+## HARD RULE: Nunca imputar fuera del rango original de cada estacion
 
-**Fuente oficial de datos:** `Resumen_LongFormat_NotProcessedNotImputation.csv`
+**Fuentes oficiales de datos:**
+- Fuente primaria (verdad absoluta): `Resumen_Crudos_IDEAM_2026.csv` / `.xlsx`
+- Fuente historica: `Resumen_LongFormat_NotProcessedNotImputation.csv`
 
 ---
 
-## RANGOS VÁLIDOS POR ESTACIÓN (Hard Limits)
+## ACTUALIZACION - 06 de Mayo 2026 (Hallazgos del dia)
 
-| Estación | Código | Inicio (dd-mm-yyyy) | Fin (dd-mm-yyyy) | Años |
-|----------|--------|---------------------|------------------|------|
-| **Puerto Wilches** | 23187010 | 07-05-2003 | 11-09-2025 | 23 |
-| **Sitio Nuevo** | 23187280 | 01-03-1979 | 18-01-2026 | 48 |
-| **El Contento** | 23217030 | 01-09-1974 | 17-01-2026 | 53 |
-| **La Gloria** | 23217060 | 21-04-1991 | 18-01-2026 | 36 |
-| **Gamarra Aut** | 23217080 | 01-01-2013 | 18-01-2026 | 14 |
-| **El Banco** | 25027020 | 01-10-1972 | 09-02-2026 | 55 |
-| **Peñoncito** | 25027330 | 01-10-1972 | 30-06-2025 | 54 |
-| **Armenia** | 25027360 | 01-02-1973 | 15-10-2025 | 53 |
-| **Las Palomas** | 25027390 | 01-08-1973 | 30-06-2025 | 53 |
-| **Plato** | 25027450 | 01-06-1976 | 31-12-2019 | 44 |
-| **Las Aguadas** | 25027490 | 01-04-1973 | 31-08-2025 | 53 |
-| **Barbosa** | 25027530 | 01-10-1973 | 20-12-2024 | 52 |
-| **Rio Nuevo** | 25027630 | 01-10-1974 | 23-10-2025 | 52 |
-| **Magangue** | 25027680 | 01-04-1973 | 30-12-2025 | 53 |
-| **Coyongal** | 25027930 | 01-03-1975 | 09-02-2026 | 52 |
-| **Tenerife** | 29017010 | 01-10-1973 | 09-02-2026 | 54 |
-| **Calamar** | 29037020 | 01-02-1967 | 09-02-2026 | 60 |
-| **San Pedrito** | 29047070 | 01-01-1979 | 31-12-2019 | 41 |
+### Hallazgo 1: Correccion del parser de San Pedrito
+Se descubrio que pandas `pd.read_excel()` con `header=0` renombraba las columnas de anos 2020-2026 como `Unnamed: 42`, `Unnamed: 43`, etc., porque la fila 0 (header) tenia NaN en esas columnas. Esto causo que San Pedrito se truncara artificialmente en 2019, perdiendo 6 anos de datos.
 
-> **⚠️ HARD RULE:** Nunca imputar datos antes de la fecha de inicio ni después de la fecha fin de cada estación.
+**Solucion aplicada:** Leer los datos sin header y detectar las columnas de ano por posicion/valor numerico.
+
+### Hallazgo 2: San Pedrito ya NO esta excluida
+Con los datos completos (1979-2025), San Pedrito muestra correlaciones excepcionales:
+- vs Calamar: **r = 0.996** (R2 = 0.993, cuadratico)
+- vs Magangue: r = 0.985
+- vs Tenerife: r = 0.983
+
+**Resultado:** San Pedrito es ahora una estacion completamente viable para imputacion via H-H.
+
+### Hallazgo 3: Cobertura de San Pedrito despues de imputacion
+- Datos originales: 16,409 (95.7%)
+- Imputados L1 (interpolacion local): 35 (0.2%)
+- Imputados L2 (H-H con Calamar): 711 (4.1%)
+- **Cobertura final: 100.0%** (17,155 registros, 0 faltantes)
+
+### Archivos actualizados hoy
+- `Resumen_Crudos_IDEAM_2026.csv` / `.xlsx` - Fuente de la verdad LONG
+- `Datos_Imputados_v4_2_Complete.csv` - San Pedrito regenerado quirurgicamente
+- Curvas H-H oficiales de San Pedrito en `Informes/imputacion/Curvas_HH_v4_2/`
+- Cartillas Fig1-5 de San Pedrito en `cartillas_estaciones/v4_2/SAN_PEDRITO/`
+
+---
+
+**Reglas de construccion del dataset maestro:**
+1. Formato LONG unico. No se usan formatos wide.
+2. Cada estacion tiene su propio rango temporal: desde su **PRIMERA fecha con dato real** (no NaN) hasta su **ULTIMA fecha con dato real**, con **corte maximo al 31-12-2025**.
+3. **NO se extrapola/imputa fuera del rango real de datos de cada estacion.** Si una estacion inicia el 01-09-1974, no existen filas antes de esa fecha.
+4. Dentro del rango real, los dias faltantes se crean con valor en blanco (NaN) para posterior imputacion.
+5. **NO se incluye el 29 de febrero** en ninguna estacion, independientemente de si el ano es bisiesto.
+6. La columna `date` es tipo datetime (en Excel) o string `dd-mm-yyyy` (en CSV).
+7. Fuente unica de datos crudos: `backend/data/raw/SERIE NIVELES IDEAM A 2026`
+
+---
+
+## RANGOS VALIDOS POR ESTACION (Hard Limits)
+
+Datos actualizados: Mayo 2026. Corte: 31-12-2025.
+
+| Estacion | Codigo | Inicio (dd-mm-yyyy) | Fin (dd-mm-yyyy) | Dias totales | Validos | Faltantes | Cobertura |
+|----------|--------|---------------------|------------------|--------------|---------|-----------|-----------|
+| **Armenia** | 25027360 | 01-02-1973 | 15-10-2025 | 19,237 | 15,020 | 4,217 | 78.1% |
+| **Barbosa** | 25027530 | 01-10-1973 | 20-12-2024 | 18,696 | 14,350 | 4,346 | 76.8% |
+| **Calamar** | 29037020 | 01-02-1967 | 31-12-2025 | 21,504 | 21,341 | 163 | 99.2% |
+| **Coyongal** | 25027930 | 01-03-1975 | 31-12-2025 | 18,556 | 15,691 | 2,865 | 84.6% |
+| **El Banco** | 25027020 | 01-10-1972 | 31-12-2025 | 19,437 | 18,706 | 731 | 96.2% |
+| **El Contento** | 23217030 | 01-09-1974 | 31-12-2025 | 18,737 | 13,430 | 5,307 | 71.7% |
+| **Gamarra Aut** | 23217080 | 01-01-2013 | 31-12-2025 | 4,745 | 4,397 | 348 | 92.7% |
+| **La Gloria** | 23217060 | 21-04-1991 | 31-12-2025 | 12,665 | 11,140 | 1,525 | 88.0% |
+| **Las Aguadas** | 25027490 | 01-04-1973 | 31-08-2025 | 19,133 | 18,749 | 384 | 98.0% |
+| **Las Palomas** | 25027390 | 01-08-1973 | 30-06-2025 | 18,949 | 15,688 | 3,261 | 82.8% |
+| **Magangue** | 25027680 | 01-04-1973 | 30-12-2025 | 19,254 | 15,799 | 3,455 | 82.1% |
+| **Penoncito** | 25027330 | 01-10-1972 | 30-06-2025 | 19,253 | 17,097 | 2,156 | 88.8% |
+| **Plato** | 25027450 | 01-06-1976 | 11-12-2025 | 18,079 | 16,142 | 1,937 | 89.3% |
+| **Puerto Wilches** | 23187010 | 07-05-2003 | 11-09-2025 | 8,158 | 7,806 | 352 | 95.7% |
+| **Rio Nuevo** | 25027630 | 01-10-1974 | 23-10-2025 | 18,638 | 14,209 | 4,429 | 76.2% |
+| **San Pedrito** | 29047070 | 01-01-1979 | 31-12-2025 | 17,155 | 16,409 | 746 | 95.7% |
+| **Sitio Nuevo** | 23187280 | 01-03-1979 | 31-12-2025 | 17,096 | 15,086 | 2,010 | 88.2% |
+| **Tenerife** | 29017010 | 01-10-1973 | 31-12-2025 | 19,072 | 14,171 | 4,901 | 74.3% |
+
+> **HARD RULE:** Nunca imputar datos antes de la fecha de inicio ni despues de la fecha fin de cada estacion.
+> 
+> **HARD RULE:** La fecha de corte global es el 31-12-2025. Si una estacion tiene datos reales hasta despues de esa fecha, se trunca al 31-12-2025. Si termina antes, su fin es su ultima fecha real.
 
 ---
 
@@ -114,14 +160,25 @@
 
 | Estación | Cobertura | Estado | Observación |
 |----------|-----------|--------|-------------|
-| **Armenia** | 77.9% | ⚠️ Limitada | Sin donante con r ≥ 0.85 (confluencia con Cauca) |
-| **Gamarra Aut** | 93.0% | ⚠️ Restringida | Serie corta (2013-2025), R² < 0.75 con donantes |
-| **San Pedrito** | 45.4% | ❌ Excluida | Estación terminal sin donantes aguas arriba |
+| **Armenia** | 77.9% | ⚠️ Limitada | Sin donante con r >= 0.85 (confluencia con Cauca) |
+| **Gamarra Aut** | 93.0% | ⚠️ Restringida | Serie corta (2013-2025), R2 < 0.75 con donantes |
 
-### Razones de exclusión:
-1. **Armenia:** Ubicada en zona de confluencia con el río Cauca, comportamiento hidrológico diferente al resto del Magdalena
-2. **Gamarra Aut:** Serie temporal muy corta (solo 14 años), insuficiente para establecer correlaciones robustas
-3. **San Pedrito:** Estación terminal del sistema, no tiene estaciones donantes aguas arriba con correlación aceptable
+### Razones de exclusion:
+1. **Armenia:** Ubicada en zona de confluencia con el rio Cauca, comportamiento hidrologico diferente al resto del Magdalena
+2. **Gamarra Aut:** Serie temporal muy corta (solo 14 anos), insuficiente para establecer correlaciones robustas
+
+### HALLAZGO IMPORTANTE - San Pedrito (Actualizacion Mayo 2026)
+
+**San Pedrito YA NO esta excluida.** Tras la correccion del parser que leia mal las columnas 2020-2026 (renombradas como `Unnamed: XX` por pandas), se descubrio que:
+
+- **Rango completo corregido:** 01-01-1979 a 31-12-2025 (17,155 dias, 95.7% cobertura)
+- **Correlacion con Calamar:** r = 0.996 (n = 14,139 dias concurrentes)
+- **Correlacion con Magangue:** r = 0.985 (n = 12,402 dias concurrentes)
+- **Correlacion con Tenerife:** r = 0.983 (n = 10,680 dias concurrentes)
+
+San Pedrito es ahora una estacion **completamente viable** para imputacion via curvas H-H usando Calamar como donante principal (o Magangue/Tenerife como secundarios).
+
+**Nota:** La baja cobertura anterior (45.4%) y la exclusion se debian a un error tecnico del parser de Excel, no a una limitacion hidrologica real.
 
 ---
 
