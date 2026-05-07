@@ -322,21 +322,22 @@ print(df['data_source'].value_counts())
 | **Gamarra Aut** | Serie corta (2013-2026) | Limitar análisis histórico |
 | **San Pedrito** | 45.4% cobertura | Excluir o usar solo originales |
 
-### Próxima Sesión - Prioridades
+### Próxima Sesión - Prioridades (Actualizado Mayo 2026)
 
-1. **Empezar redacción del informe técnico** (Sección 5: Imputación)
-2. **Revisar visualmente las 90 figuras** generadas
-3. **Hacer push a GitHub** cuando la conexión lo permita
+1. **Revisión de imputación de datos por niveles** (continuación del informe)
+2. **Revisar visualmente figuras actualizadas** (heatmap, correlación, boxplot)
+3. **Redacción del informe técnico** (metodología de imputación v4.2)
+4. **Hacer push a GitHub** cuando la conexión lo permita
 
 ---
 
 ## 10. CONTACTO Y METADATOS
 
-**Fecha de última actualización**: 10 de Abril 2026  
-**Versión del sistema**: v4.2  
-**Total figuras generadas**: 90 (18 estaciones × 5 figuras)  
-**Commits en git**: 4 (pendientes push)  
-**Skills activos**: excalidraw-diagram, cartillas-estaciones, hydrological-processing  
+**Fecha de última actualización**: 7 de Mayo 2026  
+**Versión del sistema**: v4.2 + San Pedrito Completo  
+**Total figuras generadas**: 95 (18 estaciones × 5 figuras + 5 de San Pedrito actualizadas)  
+**Commits en git**: 5 (pendientes push)  
+**Skills activos**: excalidraw-diagram, cartillas-estaciones, hydrological-processing, scientific-writing  
 
 ---
 
@@ -419,4 +420,206 @@ cartillas_estaciones/
 
 ---
 
-**Para continuar**: Ver sección 12 (Resumen de Sesión más reciente) y Tareas Pendientes sección 6.
+---
+
+## 13. RESUMEN DE SESIÓN 06-MAYO-2026
+
+### ✅ Logros de Hoy
+
+#### 1. Corrección Crítica: Parser de San Pedrito
+- **Problema identificado**: pandas `pd.read_excel()` con `header=0` renombraba columnas 2020-2026 como `Unnamed: 42`, `Unnamed: 43`, etc., porque la fila 0 tenía NaN en esas columnas.
+- **Impacto**: San Pedrito se truncaba artificialmente en 2019, perdiendo 6 años de datos.
+- **Solución**: Leer datos sin header y detectar columnas de año por posición/valor numérico.
+- **Resultado**: San Pedrito recuperó su rango completo **1979-2025** con **95.7% cobertura** (16,409 registros originales).
+
+#### 2. San Pedrito: De Excluida a Estrella ⭐
+Con los datos completos, San Pedrito muestra correlaciones excepcionales:
+| Donante | Correlación (r) | R² (cuadrático) |
+|---------|----------------|-----------------|
+| **Calamar** | **0.996** | **0.993** |
+| Magangue | 0.985 | 0.970 |
+| Tenerife | 0.983 | 0.966 |
+| Coyongal | 0.970 | 0.941 |
+| Barbosa | 0.963 | 0.927 |
+
+**Conclusión**: San Pedrito es ahora **completamente viable** para imputación vía H-H usando Calamar como donante principal.
+
+#### 3. Imputación de San Pedrito v4.2
+| Concepto | Valor |
+|----------|-------|
+| Datos originales | 16,409 (95.7%) |
+| Imputados L1 (interpolación) | 35 (0.2%) |
+| Imputados L2 (H-H con Calamar) | 711 (4.1%) |
+| **Cobertura final** | **100.0%** (17,155 registros, 0 faltantes) |
+
+- Archivo generado: `Datos_Imputados_v4_2_Complete.csv` (backup creado pre-cambio)
+- Curvas H-H oficiales generadas en `Informes/imputacion/Curvas_HH_v4_2/`
+
+#### 4. Figuras Generadas / Actualizadas
+| Figura | Archivo | Estado |
+|--------|---------|--------|
+| Heatmap datos nulos v3 | `Imagenes/Niveles/Datos nulos_v3.png` | ✅ Nueva (06-May) |
+| Matriz correlación v3 | `Imagenes/Niveles/MatrixCorrelationNiveles_v3.png` | ✅ Nueva (escala azules, sin líneas de cuenca, nombres formateados) |
+| Boxplot general | `Imagenes/Niveles/Boxplots_GeneralEstaciones.png` | ✅ Actualizado |
+| Descripción estadística | `Imagenes/Niveles/Descripcionestadisticageneral_Datoscrudosredliminmetrica.png` | ✅ Actualizado |
+| Curva doble masa | `Imagenes/Niveles/Curvadoblemasa_CalamarTenerife.png` | ✅ Nueva |
+| Cartillas San Pedrito | `cartillas_estaciones/v4_2/SAN_PEDRITO/Fig1-5` | ✅ Regeneradas (5 figuras) |
+| Curvas H-H San Pedrito | `Informes/imputacion/Curvas_HH_v4_2/Figura_HH_SAN_PEDRITO_*` | ✅ 5 curvas (Calamar, Magangue, Tenerife, Barbosa, Coyongal) |
+
+#### 5. Análisis de Homogeneidad v3
+- Pruebas aplicadas: Pettitt, SNHT, Mann-Kendall
+- Estaciones con cambios significativos: Sitio Nuevo (2008), Armenia (1998), Tenerife, Barbosa
+- Resultados exportados a: `Imagenes/Niveles/Resumenpruebashomegeniedad_v3.png`
+- Tabla CSV: `Imagenes/Niveles/Tabla_Homogeneidad_v3.csv`
+
+#### 6. Fuente de la Verdad Actualizada
+- `Resumen_Crudos_IDEAM_2026.xlsx` / `.csv` — Parser corregido, datos LONG
+- Nueva hoja en Excel: Análisis estadístico descriptivo general
+- `REGLAS_IMPUTACION_V3.md` — Actualizado con hallazgos del día
+
+#### 7. Documento Word — Avance en Redacción
+- `DRAFT_ABRIL2026_Informe_Analisis_Exploratorio_Magdalena (1) V.ALEX.docx`
+- Revisión de insights científicos con datos actualizados
+- Redacción de sección de homogeneidad temporal
+- Redacción de sección "Estaciones de referencia y recomendaciones de imputación"
+
+### 📁 Archivos Clave Generados / Modificados Hoy
+
+```
+backend/data/processed/
+├── Resumen_Crudos_IDEAM_2026.xlsx          # Parser corregido
+├── Resumen_Crudos_IDEAM_2026.csv
+└── imputation/
+    ├── Datos_Imputados_v4_2_Complete.csv              # San Pedrito imputado
+    ├── Datos_Imputados_v4_2_Complete_backup_pre_sanpedrito.csv
+    ├── Estadisticas_v4_2_Actualizado_SanPedrito.csv
+    ├── Tabla_Modelos_HH_SanPedrito.csv
+    ├── Tabla_Comparativa_SanPedrito_Antes_Despues.csv
+    └── Tabla_Comparativa_SanPedrito_Antes_Despues.txt
+
+Imagenes/Niveles/
+├── Datos nulos_v3.png
+├── MatrixCorrelationNiveles_v3.png
+├── Boxplots_GeneralEstaciones.png
+├── Descripcionestadisticageneral_Datoscrudosredliminmetrica.png
+├── Curvadoblemasa_CalamarTenerife.png
+├── Resumenpruebashomegeniedad_v3.png
+└── Tabla_Homogeneidad_v3.csv
+
+cartillas_estaciones/v4_2/SAN_PEDRITO/
+├── Fig1_Serie_Tiempo_San Pedrito.png
+├── Fig2_Violin_Mensual_San Pedrito.png
+├── Fig3_Curva_Duracion_San Pedrito.png
+├── Fig4_Curvas_Excedidos_SAN_PEDRITO_v2.png
+└── Fig5_Ajuste_Distribuciones_SAN_PEDRITO.png
+```
+
+### 📋 Para la Siguiente Sesión (Hoy 07-May-2026)
+
+**Prioridad 1**: Revisión de imputación de datos por niveles (continuar redacción informe)  
+**Prioridad 2**: Revisar visualmente figuras actualizadas (heatmap, correlación, boxplot)  
+**Prioridad 3**: Redacción del informe técnico (metodología de imputación v4.2)  
+**Prioridad 4**: Hacer push a GitHub  
+
+---
+
+## 14. RESUMEN DE SESIÓN 07-MAYO-2026
+
+### ✅ Logros de Hoy
+
+#### 1. Sistema de Imputación v4.3 - Completado
+- Archivo: `backend/data/processed/imputation/Datos_Imputados_v4_3_Corrected.csv`
+- 308,364 registros, 18 estaciones, 1967-2025
+- 9 checks de calidad: 5 PASS, 3 WARN, 0 FAIL
+- Excel resumen y redacción en Markdown generados
+
+#### 2. Hallazgo Crítico: Artefacto missForest en CALAMAR-1969 🔴
+- **Problema identificado**: missForest imputó **todo diciembre de 1969** en CALAMAR con valor **constante 2.617271**
+- **Impacto**: Los percentiles de Fig4 se "congelaban" en 2.617 para nov-dic, distorsionando las curvas climatológicas
+- **Diferencia vs v4.2**: La v4.2 se veía "más natural" porque no incluía estos datos imputados en percentiles
+- **Diagnóstico**: missForest puede generar valores constantes en ventanas largas cuando no hay suficiente información de contexto
+- **Acción inmediata**: Filtrar `data_source == 'original'` en `calcular_percentiles_estacion()` para Fig4
+
+#### 3. Corrección Fig4: Solo Datos Originales para Percentiles
+| Antes (v4.3 con imputados) | Después (v4.3 solo originales) |
+|---|---|
+| Mínimo día 334: 2.617 (congelado) | Mínimo día 334: 4.487 ✅ (igual a v4.2) |
+| Diferencia máxima vs v4.2: -1.89m | Diferencia máxima vs v4.2: 0.000m |
+| Balance visual: Anómalo en nov-dic | Balance visual: Natural, idéntico a v4.2 |
+
+**Regla establecida**: Los **percentiles climatológicos** (Fig4) deben calcularse **solo con datos originales**. Los datos imputados no reflejan la variabilidad real observada.
+
+#### 4. Cartillas v4.3 Regeneradas (90 figuras)
+- Ruta: `cartillas_estaciones/v4_3/[ESTACION]/`
+- Script: `cartillas_estaciones/generar_cartillas_v4_3.py` (copia en `v4_3/`)
+- Import residual `make_interp_spline` eliminado (no se usaba)
+- Filtrado de originales aplicado en `calcular_percentiles_estacion()`
+- Todas las estaciones: 5/5 figuras generadas exitosamente
+
+| Estación | Originales | Imputados | Estado |
+|---|---|---|---|
+| SAN_PEDRITO | 16,409 | 746 | ✅ |
+| CALAMAR | 21,341 | 163 | ✅ |
+| TENERIFE | 14,171 | 4,901 | ✅ |
+| PLATO | 16,142 | 1,937 | ✅ |
+| MAGANGUE | 15,799 | 3,455 | ✅ |
+| BARBOSA | 14,350 | 4,346 | ✅ |
+| COYONGAL | 15,691 | 2,865 | ✅ |
+| ARMENIA | 15,020 | 4,217 | ✅ |
+| RIO_NUEVO | 14,209 | 4,429 | ✅ |
+| LAS_PALOMAS | 15,688 | 3,261 | ✅ |
+| LAS_AGUADAS | 18,749 | 384 | ✅ |
+| EL_BANCO | 18,706 | 731 | ✅ |
+| PENONCITO | 17,097 | 2,156 | ✅ |
+| LA_GLORIA | 11,140 | 1,525 | ✅ |
+| GAMARRA_AUT | 4,397 | 348 | ✅ |
+| EL_CONTENTO | 13,430 | 5,307 | ✅ |
+| SITIO_NUEVO | 15,086 | 2,010 | ✅ |
+| PUERTO_WILCHES | 7,806 | 352 | ✅ |
+
+#### 5. Stacked Bars de Composición
+- Archivo: `v4_3/Stacked_Bars_Composicion_Imputacion_v4_3.png`
+- Visualización L0-L3 por estación
+
+### 🔴 Problemas Descubiertos Pendientes de Investigación
+
+#### missForest: ¿Más artefactos como CALAMAR-1969?
+- **Hipótesis**: missForest puede estar generando valores constantes en otras estaciones/años
+- **Indicador**: Valores imputados con `nunique() == 1` en ventanas > 15 días consecutivos
+- **Próximo paso**: Script de diagnóstico para detectar automáticamente:
+  - Ventanas de valores constantes en datos L4 (missForest)
+  - Saltos anómalos entre imputado y original adyacente
+  - Valores fuera del rango físico plausible por estación
+
+### 📋 Para la Siguiente Sesión (Mañana 08-MAY-2026)
+
+**Prioridad 1**: Inspección visual del usuario de las 90 figuras v4.3
+**Prioridad 2**: Script de diagnóstico para detectar artefactos missForest en todo el dataset
+**Prioridad 3**: Evaluar alternativas de imputación ML (ver Sección 15 - Investigación Pendiente)
+**Prioridad 4**: Decidir si se re-imputa con método alternativo si se encuentran más artefactos graves
+
+---
+
+## 15. INVESTIGACIÓN PENDIENTE: Alternativas de Imputación ML/Deep Learning
+
+### Contexto
+missForest (Random Forest) mostró artefactos en CALAMAR-1969. Se requiere evaluar alternativas modernas.
+
+### Opciones a Evaluar
+1. **BRITS** (Bidirectional Recurrent Imputation for Time Series) - RNN
+2. **M-RNN** (Multi-directional RNN)
+3. **SAITS** (Self-Attention-based Imputation for Time Series) - Transformer
+4. **TimesNet** + imputación
+5. **Neural ODEs** para series temporales
+6. **GP-VAE** (Gaussian Process VAE)
+
+### Criterios de Evaluación
+- Preservación de estacionalidad hidrológica
+- Sin valores constantes en ventanas largas
+- Consistencia física (continuidad, rangos plausibles)
+- Capacidad de manejar múltiples estaciones correlacionadas
+- Interpretabilidad de incertidumbre
+
+---
+
+**Para continuar**: Ver sección 14 (Resumen de Sesión más reciente) y Tareas Pendientes sección 6.
