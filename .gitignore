@@ -44,15 +44,16 @@ ENV/
 *.xlsx
 *.xls
 
-# Images (except those in cartillas)
+# Images (binary files - never commit)
 *.png
 *.jpg
 *.jpeg
+*.gif
+*.bmp
+*.svg
 
-# Keep cartillas and docs
-!cartillas_estaciones/**/*.png
-!docs/**/*.png
-!Informes/**/*.png
+# NOTE: Existing tracked images in v4_2 remain in repo history.
+# New images are NEVER committed. Store them separately or in releases.
 
 # OS
 .DS_Store
@@ -75,3 +76,7 @@ Data/
 
 # Documents in root (deliverables)
 /INFORMEDETALLADO_*.docx
+
+# Word documents
+docs/*.docx
+docs/~\$*.docx
