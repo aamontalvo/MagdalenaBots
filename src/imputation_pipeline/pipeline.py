@@ -1,6 +1,10 @@
 """
 Orquestador principal del pipeline de imputacion.
-Ejecuta todo el flujo: carga -> HH -> L1 -> L2 -> L3 -> hard rules -> tracking -> guardado.
+Ejecuta todo el flujo: carga -> HH -> L1 -> L2 -> hard rules -> tracking -> guardado.
+
+NOTA: Este modulo NO incluye L3 (missForest). El pipeline se limita a:
+      L1 = interpolacion local (gaps <= 3 dias)
+      L2 = curvas H-H cuadraticas auto-descubiertas
 """
 
 import pandas as pd
@@ -9,7 +13,7 @@ from pathlib import Path
 from .config import DESCARTADAS
 from .loaders import load_raw_data, to_wide_format, get_station_list
 from .hh_selector import run_hh_discovery
-from .imputers import apply_l1_interpolation, apply_l2_hh_imputation, apply_l3_missforest
+from .imputers import apply_l1_interpolation, apply_l2_hh_imputation
 from .hard_rules import compute_original_ranges, apply_hard_rule_clip, verify_no_outliers
 from .tracker import build_tracked_dataset
 
@@ -45,9 +49,9 @@ def run_pipeline(data_path, output_dir, date_format=None):
     # [1] CARGA
     # ============================================================
     log("=" * 70)
-    log("PIPELINE DE IMPUTACION v1.0")
+    log("PIPELINE DE IMPUTACION v2.0 (L1 + L2, sin missForest)")
     log("=" * 70)
-    log(f"\n[1/8] Cargando datos crudos desde: {data_path}")
+    log(f"\n[1/6] Cargando datos crudos desde: {data_path}")
 
     df_long = load_raw_data(data_path, date_format=date_format)
     log(f"       Registros cargados: {len(df_long):,}")
@@ -57,7 +61,7 @@ def run_pipeline(data_path, output_dir, date_format=None):
     # ============================================================
     # [2] WIDE + RANGOS ORIGINALES
     # ============================================================
-    log("\n[2/8] Pivotando a formato wide y calculando rangos originales...")
+    log("\n[2/6] Pivotando a formato wide y calculando rangos originales...")
     df_wide_orig = to_wide_format(df_long)
     log(f"       Fechas: {len(df_wide_orig):,}, Estaciones: {len(df_wide_orig.columns)}")
 
@@ -68,7 +72,7 @@ def run_pipeline(data_path, output_dir, date_format=None):
     # ============================================================
     # [3] DESCUBRIR Y SELECCIONAR MODELOS H-H
     # ============================================================
-    log("\n[3/8] Descubriendo y seleccionando modelos H-H...")
+    log("\n[3/6] Descubriendo y seleccionando modelos H-H...")
     modelos_hh, df_todas_hh = run_hh_discovery(df_long)
 
     # Guardar tabla completa de HH
@@ -84,7 +88,7 @@ def run_pipeline(data_path, output_dir, date_format=None):
     # ============================================================
     # [4] L1 - INTERPOLACION LOCAL
     # ============================================================
-    log("\n[4/8] Aplicando L1 - Interpolacion local...")
+    log("\n[4/6] Aplicando L1 - Interpolacion local...")
     df_wide_l1 = df_wide_orig.copy()
     l1_counts = {}
     for col in df_wide_l1.columns:
@@ -97,7 +101,7 @@ def run_pipeline(data_path, output_dir, date_format=None):
     # ============================================================
     # [5] L2 - H-H CUADRATICA
     # ============================================================
-    log("\n[5/8] Aplicando L2 - Curvas H-H cuadraticas...")
+    log("\n[5/6] Aplicando L2 - Curvas H-H cuadraticas...")
     df_wide_l2 = df_wide_l1.copy()
     l2_counts = {}
     for model in modelos_hh:
@@ -109,24 +113,10 @@ def run_pipeline(data_path, output_dir, date_format=None):
     log(f"       Total imputados L2: {total_l2:,}")
 
     # ============================================================
-    # [6] L3 - MISSFOREST
+    # [6] HARD RULES + TRACKING + GUARDADO
     # ============================================================
-    log("\n[6/8] Aplicando L3 - missForest...")
-    df_wide_l3 = df_wide_l2.copy()
-    l3_counts = {}
-    for col in df_wide_l3.columns:
-        n = apply_l3_missforest(df_wide_l3, col)
-        l3_counts[col] = n
-        if n > 0:
-            log(f"       {col:<18} : {n:>4} valores imputados por L3")
-    total_l3 = sum(l3_counts.values())
-    log(f"       Total imputados L3: {total_l3:,}")
-
-    # ============================================================
-    # [7] HARD RULES
-    # ============================================================
-    log("\n[7/8] Aplicando hard rules (clip a rango original)...")
-    clipped = apply_hard_rule_clip(df_wide_l3, rangos_originales)
+    log("\n[6/6] Hard rules, tracking y guardado...")
+    clipped = apply_hard_rule_clip(df_wide_l2, rangos_originales)
     if clipped:
         log(f"       Valores clipeados:")
         for est, n in sorted(clipped.items()):
@@ -134,21 +124,17 @@ def run_pipeline(data_path, output_dir, date_format=None):
     else:
         log("       Ningun valor requirio clip (todos dentro de rango)")
 
-    violations = verify_no_outliers(df_wide_l3, rangos_originales)
+    violations = verify_no_outliers(df_wide_l2, rangos_originales)
     if violations:
         log(f"       [ALERTA] {len(violations)} violaciones detectadas post-hard-rule!")
     else:
         log("       [OK] Sin violaciones de rango")
 
-    # ============================================================
-    # [8] TRACKING Y GUARDADO
-    # ============================================================
-    log("\n[8/8] Construyendo dataset final con tracking...")
+    # Tracking
     df_long_final = build_tracked_dataset(
-        df_wide_final=df_wide_l3,
+        df_wide_final=df_wide_l2,
         df_wide_orig=df_wide_orig,
         df_wide_after_l1=df_wide_l1,
-        df_wide_after_l2=df_wide_l2,
     )
 
     output_file = output_dir / 'Datos_Imputados.csv'
@@ -157,9 +143,9 @@ def run_pipeline(data_path, output_dir, date_format=None):
 
     # Resumen por estacion
     resumen = []
-    for col in df_wide_l3.columns:
-        n_total = len(df_wide_l3[col])
-        n_nan = df_wide_l3[col].isna().sum()
+    for col in df_wide_l2.columns:
+        n_total = len(df_wide_l2[col])
+        n_nan = df_wide_l2[col].isna().sum()
         is_desc = col in DESCARTADAS
         resumen.append({
             'Estacion': col,
@@ -168,7 +154,6 @@ def run_pipeline(data_path, output_dir, date_format=None):
             'Cobertura_pct': round((n_total - n_nan) / n_total * 100, 2),
             'L1': l1_counts.get(col, 0),
             'L2': l2_counts.get(col, 0),
-            'L3': l3_counts.get(col, 0),
             'Descartada': is_desc,
             'Status': 'OK' if (n_nan == 0 or is_desc) else 'INCOMPLETA',
         })
@@ -191,8 +176,7 @@ def run_pipeline(data_path, output_dir, date_format=None):
     log(f"Modelos H-H        : {len(modelos_hh)} seleccionados")
     log(f"Imputados L1       : {total_l1:,}")
     log(f"Imputados L2       : {total_l2:,}")
-    log(f"Imputados L3       : {total_l3:,}")
-    log(f"Total imputados    : {total_l1 + total_l2 + total_l3:,}")
+    log(f"Total imputados    : {total_l1 + total_l2:,}")
     log(f"Output             : {output_dir}")
 
     no_desc = df_resumen[~df_resumen['Descartada']]

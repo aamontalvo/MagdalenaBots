@@ -1,10 +1,9 @@
 """
-Imputadores de nivel L1, L2 y L3.
+Imputadores de nivel L1 (interpolacion local) y L2 (curvas H-H).
 """
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
-from .config import L1_MAX_GAP, L1_KERNEL, MISSFOREST_ESTIMATORS
+from .config import L1_MAX_GAP, L1_KERNEL
 
 
 def apply_l1_interpolation(series, max_gap=L1_MAX_GAP):
@@ -86,44 +85,3 @@ def apply_l2_hh_imputation(df_wide, model):
     y_pred = a * x**2 + b * x + c
     df_wide.loc[mask, objetivo] = y_pred
     return n_imp
-
-
-def apply_l3_missforest(df_wide, target_col, n_estimators=MISSFOREST_ESTIMATORS):
-    """
-    Imputacion multivariada no parametrica con Random Forest.
-
-    Retorna:
-        numero de valores imputados
-    """
-    if target_col not in df_wide.columns:
-        return 0
-
-    target_nan = df_wide[target_col].isna()
-    n_nan = target_nan.sum()
-    if n_nan == 0:
-        return 0
-
-    feature_cols = [c for c in df_wide.columns if c != target_col]
-    if len(feature_cols) == 0:
-        return 0
-
-    train_mask = df_wide[target_col].notna()
-    if train_mask.sum() < 10:
-        return 0
-
-    X_train = df_wide.loc[train_mask, feature_cols].copy()
-    y_train = df_wide.loc[train_mask, target_col].copy()
-
-    for col in X_train.columns:
-        X_train[col] = X_train[col].fillna(X_train[col].median())
-
-    rf = RandomForestRegressor(n_estimators=n_estimators, random_state=42, n_jobs=-1)
-    rf.fit(X_train, y_train)
-
-    X_pred = df_wide.loc[target_nan, feature_cols].copy()
-    for col in X_pred.columns:
-        X_pred[col] = X_pred[col].fillna(X_pred[col].median())
-
-    y_pred = rf.predict(X_pred)
-    df_wide.loc[target_nan, target_col] = y_pred
-    return n_nan

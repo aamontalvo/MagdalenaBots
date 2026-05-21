@@ -10,7 +10,6 @@ R2_UMBRAL = 0.75           # R2 minimo para aceptar modelo H-H
 MIN_N_TRAIN = 50           # Minimo de puntos concurrentes para entrenar H-H
 L1_MAX_GAP = 3             # Maximo gap en dias para interpolacion local
 L1_KERNEL = {-2: 0.1, -1: 0.2, 0: 0.4, 1: 0.2, 2: 0.1}  # Pesos interpolacion
-MISSFOREST_ESTIMATORS = 100  # Numero de arboles en missForest
 
 # ============================================================
 # ORDEN GEOGRAFICO (aguas abajo -> aguas arriba)

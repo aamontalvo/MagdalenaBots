@@ -1,19 +1,18 @@
 """
 Tracking de metodos de imputacion en el dataset final.
+Solo L1 (interpolacion local) y L2 (curvas H-H cuadraticas).
 """
 import pandas as pd
-import numpy as np
 
 
-def build_tracked_dataset(df_wide_final, df_wide_orig, df_wide_after_l1, df_wide_after_l2):
+def build_tracked_dataset(df_wide_final, df_wide_orig, df_wide_after_l1):
     """
     Construye dataset LONG con tracking de nivel de imputacion y metodo.
 
     Parametros:
-        df_wide_final : DataFrame wide despues de L1+L2+L3
-        df_wide_orig  : DataFrame wide original (solo crudos)
-        df_wide_after_l1 : DataFrame wide despues de L1 (para detectar L1)
-        df_wide_after_l2 : DataFrame wide despues de L2 (para detectar L2)
+        df_wide_final     : DataFrame wide despues de L1+L2
+        df_wide_orig      : DataFrame wide original (solo crudos)
+        df_wide_after_l1  : DataFrame wide despues de L1 (para detectar L1)
 
     Retorna:
         DataFrame LONG con columnas:
@@ -42,15 +41,11 @@ def build_tracked_dataset(df_wide_final, df_wide_orig, df_wide_after_l1, df_wide
         # L1: valido despues de L1, pero NaN en originales
         mask_l1 = mask_orig_nan & df_wide_after_l1[col].notna()
 
-        # L2: valido despues de L2, pero aun NaN despues de L1
-        mask_l2 = mask_orig_nan & df_wide_after_l1[col].isna() & df_wide_after_l2[col].notna()
-
-        # L3: valido en final, pero NaN despues de L2
-        mask_l3 = mask_orig_nan & df_wide_after_l2[col].isna() & df_wide_final[col].notna()
+        # L2: valido en final, pero aun NaN despues de L1
+        mask_l2 = mask_orig_nan & df_wide_after_l1[col].isna() & df_wide_final[col].notna()
 
         fechas_l1 = df_wide_orig.index[mask_l1]
         fechas_l2 = df_wide_orig.index[mask_l2]
-        fechas_l3 = df_wide_orig.index[mask_l3]
 
         df_long.loc[
             (df_long[COL_STATION] == col) & df_long[COL_DATE].isin(fechas_l1),
@@ -61,10 +56,5 @@ def build_tracked_dataset(df_wide_final, df_wide_orig, df_wide_after_l1, df_wide
             (df_long[COL_STATION] == col) & df_long[COL_DATE].isin(fechas_l2),
             ['Nivel_Imputacion', 'Metodo']
         ] = [2, f"L2_HH_{col}_quadratic"]
-
-        df_long.loc[
-            (df_long[COL_STATION] == col) & df_long[COL_DATE].isin(fechas_l3),
-            ['Nivel_Imputacion', 'Metodo']
-        ] = [3, 'L3_missForest']
 
     return df_long
