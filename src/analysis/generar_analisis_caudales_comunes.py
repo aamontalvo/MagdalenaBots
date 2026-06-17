@@ -358,9 +358,9 @@ def generar_boxplot_general(df_total):
                 whiskerprops=dict(color='black'),
                 capprops=dict(color='black'))
 
-    ax.set_xlabel('Estacion (aguas abajo -> aguas arriba)', fontsize=12, fontweight='bold')
+    ax.set_xlabel('Estacion - aguas abajo a aguas arriba', fontsize=12, fontweight='bold')
     ax.set_ylabel('Caudal (m3/s)', fontsize=12, fontweight='bold')
-    ax.set_title('Distribucion de Caudales por Estacion - Rio Magdalena\n(Estaciones comunes con niveles)',
+    ax.set_title('Distribucion de Caudales por Estacion - Rio Magdalena',
                  fontsize=14, fontweight='bold', pad=20)
     plt.xticks(rotation=45, ha='right')
     ax.grid(True, alpha=0.3, axis='y')
