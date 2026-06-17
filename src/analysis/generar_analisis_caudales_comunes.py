@@ -443,8 +443,10 @@ def generar_matriz_correlacion(df_total):
                 cbar_kws={'label': 'Correlacion de Pearson'}, ax=ax,
                 annot_kws={'size': 9})
 
-    ax.set_title('Matriz de Correlacion de Caudales\n(Datos originales concurrentes)',
+    ax.set_title('Matriz de Correlacion de Caudales',
                  fontsize=14, fontweight='bold', pad=20)
+    ax.minorticks_off()
+    ax.grid(False)
     plt.xticks(rotation=45, ha='right')
     plt.yticks(rotation=0)
     plt.tight_layout()
