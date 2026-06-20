@@ -34,6 +34,9 @@ import warnings
 warnings.filterwarnings('ignore')
 sys.stdout.reconfigure(encoding='utf-8')
 
+# Importar verificacion de integridad
+from verificar_caudales_formato_largo import verificar_caudales, ESTACIONES_COMUNES
+
 # -----------------------------------------------------------------------------
 # CONFIGURACION
 # -----------------------------------------------------------------------------
@@ -464,6 +467,19 @@ def main():
     print('=' * 70)
     print('ANALISIS DE CAUDALES - ESTACIONES COMUNES CON NIVELES')
     print('=' * 70)
+
+    # Verificar integridad de datos antes de procesar
+    print('\n' + '-' * 70)
+    print('VERIFICANDO INTEGRIDAD DE DATOS')
+    print('-' * 70)
+    ok, reporte = verificar_caudales(
+        csv_path=INPUT_CSV,
+        estaciones_comunes=set(GEOGRAPHIC_ORDER)
+    )
+    print(reporte)
+    if not ok:
+        print('\n[ERROR] La verificacion de integridad fallo. No se generaran figuras.')
+        sys.exit(1)
 
     df_total = pd.read_csv(INPUT_CSV, parse_dates=['fecha'])
     df_total['estacion'] = df_total['estacion'].str.upper().str.strip()
