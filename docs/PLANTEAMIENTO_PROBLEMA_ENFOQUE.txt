@@ -1,0 +1,29 @@
+PLANTEAMIENTO DEL PROBLEMA, JUSTIFICACION Y ENFOQUE DEL SISTEMA DE IMPUTACION HIDROMETRICA DEL RIO MAGDALENA
+
+
+1. PLANTEAMIENTO DEL PROBLEMA
+
+La cuenca del Rio Magdalena cuenta con dieciocho estaciones hidrometricas operadas por el Instituto de Hidrologia, Meteorologia y Estudios Ambientales (IDEAM), cuyos registros de cotas (msnm) abarcan —en el mejor de los casos— mas de seis decadas. No obstante, la calidad de estas series se ve comprometida por datos faltantes sistematicos, producto de fallos instrumentales e interrupciones operativas, lo cual impide la aplicacion de modelos de riesgo hidrologico que exigen series completas y fisicamente coherentes.
+
+El problema se delimita a la imputacion de cotas diarias en estaciones de aforo fluvial, excluyendo las catalogadas como inhomogeneas (ARMENIA, TENERIFE, BARBOSA y SITIO_NUEVO). Operativamente, la imputacion se define como la estimacion de valores faltantes mediante relaciones hidraulicas entre estaciones vecinas, donde solo una estacion aguas arriba puede servir como donante para una estacion aguas abajo. El alcance abarca la automatizacion completa del flujo, desde la recepcion de datos crudos en formato long hasta la generacion de un dataset final con trazabilidad del metodo empleado en cada valor.
+
+
+2. JUSTIFICACION
+
+La consolidacion de series completas constituye el insumo fundamental para los modelos de inundacion que el proyecto SGR-Magdalena requiere para la gestion del riesgo en la cuenca. La ausencia de una metodologia estandarizada de imputacion ha derivado en practicas ad hoc que introducen artefactos estadisticos dificiles de detectar, como bloques de valores constantes o patrones artificiales que distorsionan la estadistica descriptiva y propagan sesgos en los analisis posteriores. La estacion CALAMAR durante 1969–1970 ejemplifica este riesgo, donde un procedimiento previo genero un segmento de valores inmutables (2.617 msnm) que comprometia la representatividad de la serie. Actuar sobre este problema permite disponer de una base robusta, trazable y reproducible, reduciendo la incertidumbre en los analisis de ingenieria.
+
+Los beneficios esperados incluyen la eliminacion de intervenciones manuales, la trazabilidad completa de cada valor estimado y la generacion de codigo modular ejecutable unicamente modificando la ruta del archivo de entrada. La inaccion conlleva el riesgo de fundamentar decisiones de infraestructura sobre datos cuyas lagunas fueron rellenadas sin criterio fisico. Las partes interesadas se benefician de un proceso documentado y validado mediante reglas de coherencia fisica que limitan todo valor imputado al rango historico original de su estacion.
+
+
+3. ENFOQUE Y COMPONENTES
+
+El objetivo general consiste en desarrollar un pipeline automatizado de imputacion en cascada que, partiendo de datos crudos IDEAM, descubra automaticamente las relaciones altura-altura (H-H) entre estaciones, seleccione los mejores modelos segun R2 >= 0.75 y aplique la imputacion en dos niveles: interpolacion local ponderada para gaps <= 3 dias (L1) y regresion cuadratica H-H para gaps mayores (L2). Los objetivos especificos incluyen (i) descartar modelos de aprendizaje profundo con colapso estadistico, como SAITS, cuya ventana de 90 dias resulto inferior a la longitud de los bloques de datos faltantes, (ii) corregir artefactos mediante reemplazo por climatologia estacional con variabilidad real, y (iii) separar el pipeline en dos fases independientes para evitar tiempos de ejecucion excesivos.
+
+El alcance cubre las dieciocho estaciones con orden geografico definido (aguas abajo hacia aguas arriba), excluyendo metodos de imputacion multivariada no parametrica como missForest por su costo computacional y falta de interpretacion fisica directa. El marco metodologico se fundamenta en regresion polinomial de segundo orden entre series concurrentes, empleando exclusivamente bibliotecas de Python (pandas, numpy, scipy, scikit-learn). Las fuentes de informacion consisten en el dataset Resumen_Crudos_IDEAM_2026.csv, con 308,364 registros en formato long. Los indicadores de exito se definen mediante modelos H-H seleccionados con R2 >= 0.75, cobertura por estacion, violaciones a las hard rules y tiempos de ejecucion inferiores a quince segundos para el descubrimiento y treinta para la imputacion.
+
+
+4. RESULTADOS ESPERADOS E IMPACTOS
+
+Se espera obtener un dataset long completo —salvo estaciones inhomogeneas— donde cada registro incluya etiquetas de trazabilidad que identifiquen si el valor es original, producto de interpolacion local o estimado mediante curva H-H cuadratica. Los beneficios directos incluyen la disponibilidad inmediata de series listas para modelacion hidrologica sin preprocesamiento manual, mientras que los institucionales radican en la estandarizacion de un procedimiento replicable para futuras actualizaciones IDEAM.
+
+Los criterios de evaluacion establecen cero modificaciones sobre datos originales existentes, cero nuevas violaciones a las hard rules y cobertura completa para estaciones no descartadas tras L1 y L2. El desarrollo y validacion recaen en el analista de datos, mientras que la supervision metodologica y los criterios de aceptacion corresponden al director tecnico, quien aprueba cada version antes de su integracion al flujo de produccion.
