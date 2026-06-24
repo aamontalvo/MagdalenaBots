@@ -225,7 +225,9 @@ def plot_station_audit(station, df_imp, df_raw, model, student_data, official_ra
         ax2.text(0.5, 0.5, "Sin imputaciones L2", ha="center", va="center", transform=ax2.transAxes)
         ax2.set_title("Zoom a periodo con imputacion L2", fontweight="bold")
     ax2.set_ylabel("Cota (m)")
-    ax2.legend(loc="upper right")
+    handles, labels = ax2.get_legend_handles_labels()
+    if handles:
+        ax2.legend(handles, labels, loc="upper right")
     ax2.grid(alpha=0.3)
 
     # 3. Boxplot original vs imputado
