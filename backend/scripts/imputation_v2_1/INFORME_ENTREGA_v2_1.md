@@ -19,6 +19,7 @@ Se construyo el pipeline v2.1 de imputacion de niveles de agua del IDEAM para la
 - Conservar los `NaN` dentro del rango oficial para que el dataset final refleje cobertura real.
 
 Commit de referencia: `ed1bfb0` — `feat(imputation): pipeline v2.1 con mascara de rango oficial y auditoria`
+Commit experimento L2b: `pendiente` — `feat(experiment): segunda donante H-H complementaria L2b`
 
 ---
 
@@ -35,6 +36,9 @@ Commit de referencia: `ed1bfb0` — `feat(imputation): pipeline v2.1 con mascara
 | `05_validate_and_report.py` | Validaciones post-imputacion, comparacion con corrida anterior y nuevos heatmaps de nulos. |
 | `06_auditoria_12_estaciones.py` | Auditoria detallada de 12 estaciones representativas. |
 | `07_auditoria_todas_estaciones.py` | Auditoria detallada de las 24 estaciones con figura individual por estacion. |
+| `08_evaluar_candidatos_l2b.py` | Evaluacion de candidatos para segunda donante H-H complementaria (L2b). |
+| `09_experimento_l2b.py` | Aplicacion de L2b a estaciones criticas sin modificar L0/L1/L2. |
+| `10_validar_y_figuras_l2b.py` | Validacion de L2b y generacion de figuras comparativas. |
 | `imputation_pipeline_v2_1/` | Paquete reutilizable: config, loaders, hh_selector, imputers, hard_rules, tracker. |
 
 ### 2.2 Outputs principales (`backend/data/work/imputation_v2_1/output/`)
@@ -52,6 +56,13 @@ Commit de referencia: `ed1bfb0` — `feat(imputation): pipeline v2.1 con mascara
 | `figura_series_temporales.png` | Series temporales de ejemplo. |
 | `auditoria_12_estaciones.md` | Reporte Markdown con tablas y 12 figuras. |
 | `auditoria_todas_estaciones.md` | Reporte Markdown con tablas y 24 figuras. |
+| `evaluacion_candidatos_l2b.csv` | Todos los candidatos evaluados para segunda donante. |
+| `Datos_Imputados_L2b_experimento.csv` | Dataset experimental con L2b aplicado a 3 estaciones criticas. |
+| `Tabla_Modelos_L2b_experimento.csv` | Modelos H-H usados en el experimento L2b. |
+| `Resumen_Cobertura_L2b_experimento.csv` | Cobertura antes y despues de L2b. |
+| `experimento_l2b.md` | Reporte del experimento L2b. |
+| `validacion_l2b.md` | Validacion de L2b. |
+| `figuras/l2b_experimento/comparacion_l2b_*.png` | Figuras comparativas L2 vs L2b. |
 | `figuras/auditoria/auditoria_<ESTACION>.png` | Figura de auditoria individual por estacion. |
 
 ---
@@ -128,29 +139,60 @@ La mayor diferencia maxima se presenta en estaciones con mucha imputacion L2 (CA
 
 ---
 
+### 3.8 Experimento L2b: segunda donante H-H complementaria
+
+Se diseno un experimento para cubrir los NaN restantes de las tres estaciones mas criticas sin modificar los niveles L0/L1/L2 existentes.
+
+**Criterios de seleccion del nuevo donante:**
+- R2 del ajuste cuadratico >= 0.65.
+- Correlacion de Pearson >= 0.8.
+- Modelo entrenado solo con datos originales (L0) del objetivo.
+- Maxima cobertura de los NaN restantes.
+
+**Donante seleccionado para las tres estaciones:** `PENONCITO`
+
+| Estacion | R2 L2b | r L2b | n_train | NaN antes L2b | NaN despues L2b | Cobertura final |
+|---|---|---|---|---|---|---|
+| SAN_PABLO | 0.6754 | 0.8216 | 10,111 | 4,806 | 12 | 99.93% |
+| EL_CONTENTO | 0.8048 | 0.8970 | 12,510 | 3,441 | 13 | 99.93% |
+| GAMARRA | 0.8477 | 0.9207 | 6,906 | 1,348 | 7 | 99.93% |
+
+**Validacion L2b:**
+- Violaciones de rango historico tras aplicar hard rules: **0**
+- Los valores clipeados por hard rule quedaron registrados implicitamente en el output final.
+
+**Nota:** Este es un experimento separado. No se ha integrado al `Datos_Imputados.csv` principal. La decision de integrarlo requiere revision hidrologica adicional.
+
+---
+
 ## 4. Que falta por hacer
 
 1. **Decision sobre los NaN restantes**
-   - Las estaciones con cobertura < 100% tienen `NaN` porque no hay donante concurrente en esos periodos y los gaps son mayores a 3 dias (L1 no aplica).
-   - Se requiere decidir si se aceptan como tales, se busca un segundo donante, o se aplica una extrapolacion/estacionalidad para completarlas.
+   - El experimento L2b cubrio practicamente todos los NaN de SAN_PABLO, EL_CONTENTO y GAMARRA usando a PENONCITO como segunda donante.
+   - Se requiere revision hidrologica para decidir si se integra L2b al pipeline principal o se mantiene como experimento.
+   - Las demas estaciones con cobertura < 100% (CALAMAR, MAGANGUE, PLATO, etc.) aun requieren decision.
 
 2. **Revision manual de estaciones criticas**
-   - `SAN_PABLO`, `EL_CONTENTO`, `CALAMAR`, `MAGANGUE`, `PLATO` y `GAMARRA` necesitan revision hidrologica.
-   - Verificar si los modelos H-H actuales son fisicamente razonables (especialmente `PLATO <- TEBSA` y `MAGANGUE <- TENERIFE`).
+   - `SAN_PABLO`, `EL_CONTENTO`, `GAMARRA`: validar visualmente las figuras L2b y la coherencia con PENONCITO.
+   - `CALAMAR`, `MAGANGUE`, `PLATO`: revisar donantes alternativos por cobertura temporal.
 
-3. **Definir el formato de entrega final**
+3. **Integracion opcional de L2b al pipeline principal**
+   - Si se aprueba, extender `04_run_imputation.py` para aplicar L2b como nivel complementario.
+   - Actualizar `tracker.py`, `Resumen_Imputacion.csv` y el formato de `Metodo` para incluir L2b.
+
+4. **Definir el formato de entrega final**
    - Actualmente `Datos_Imputados.csv` incluye columnas: `Fecha, NombreEstacion, Cota, Nivel_Imputacion, Metodo`.
    - Confirmar si el formato entregable debe ser wide (fechas x estaciones) o long, y si debe incluir/excluir NaN.
 
-4. **Integracion con el resto del proyecto**
+5. **Integracion con el resto del proyecto**
    - Mover/renombrar el output final al directorio que espera el backend.
    - Actualizar cualquier notebook o script downstream que use el dataset anterior.
 
-5. **Documentacion tecnica**
+6. **Documentacion tecnica**
    - Convertir este informe a Word si se requiere.
    - Anadir README dentro de `backend/scripts/imputation_v2_1/` con instrucciones de ejecucion.
 
-6. **Validaciones adicionales (opcional pero recomendado)**
+7. **Validaciones adicionales (opcional pero recomendado)**
    - Analisis de residuos por estacion y por mes.
    - Prueba de sensibilidad al umbral de R2.
    - Revision de estacionalidad antes/después de la imputacion.
@@ -160,9 +202,14 @@ La mayor diferencia maxima se presenta en estaciones con mucha imputacion L2 (CA
 ## 5. Archivos para revision inmediata
 
 - `backend/scripts/imputation_v2_1/07_auditoria_todas_estaciones.py`
+- `backend/scripts/imputation_v2_1/08_evaluar_candidatos_l2b.py`
+- `backend/scripts/imputation_v2_1/09_experimento_l2b.py`
+- `backend/scripts/imputation_v2_1/10_validar_y_figuras_l2b.py`
 - `backend/data/work/imputation_v2_1/output/auditoria_todas_estaciones.md`
+- `backend/data/work/imputation_v2_1/output/experimento_l2b.md`
+- `backend/data/work/imputation_v2_1/output/validacion_l2b.md`
+- `backend/data/work/imputation_v2_1/output/figuras/l2b_experimento/comparacion_l2b_*.png`
 - `backend/data/work/imputation_v2_1/output/figura_heatmap_nulos_antes_despues.png`
-- `backend/data/work/imputation_v2_1/output/Resumen_Imputacion.csv`
 
 ---
 
@@ -186,6 +233,15 @@ py backend/scripts/imputation_v2_1/06_auditoria_12_estaciones.py
 
 # 6. Auditoria de todas las estaciones
 py backend/scripts/imputation_v2_1/07_auditoria_todas_estaciones.py
+
+# 7. Evaluar candidatos L2b
+py backend/scripts/imputation_v2_1/08_evaluar_candidatos_l2b.py
+
+# 8. Aplicar experimento L2b
+py backend/scripts/imputation_v2_1/09_experimento_l2b.py
+
+# 9. Validar y generar figuras L2b
+py backend/scripts/imputation_v2_1/10_validar_y_figuras_l2b.py
 ```
 
 ---
