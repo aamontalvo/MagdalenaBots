@@ -187,13 +187,11 @@ def check_duplicate_dates(df):
     return alerts
 
 
-def check_l2b_only_on_nan(df):
-    """Verifica que L3/L2b solo se haya aplicado donde originalmente habia NaN."""
+def check_l3_only_on_nan(df):
+    """Verifica que L3 solo se haya aplicado donde originalmente habia NaN."""
     alerts = []
-    mask = (df["Nivel_Imputacion"] == 3) & (df.get("Nivel_Imputacion_Original", 0) != 0)
-    # No tenemos Nivel_Imputacion_Original, pero podemos inferir: L3 solo debe estar en fechas
-    # donde el metodo indica L3. No hay forma directa de verificar sin el sin-L2b.
-    # Dejamos esta verificacion como placeholder.
+    # Se requiere Nivel_Imputacion_Original para verificarlo directamente;
+    # sin esa columna se deja como placeholder.
     return alerts
 
 
@@ -253,8 +251,8 @@ def main():
     report.append("")
     report.append("## Resumen por estacion")
     report.append("")
-    report.append("| Estacion | Cobertura % | L0 | L1 | L2 | L3/L2b | NaN |")
-    report.append("|----------|-------------|----|----|----|--------|-----|")
+    report.append("| Estacion | Cobertura % | L0 | L1 | L2 | L3 | NaN |")
+    report.append("|----------|-------------|----|----|----|----|-----|")
     for estacion, grp in df.groupby("NombreEstacion"):
         if estacion not in official_ranges:
             continue

@@ -223,11 +223,11 @@ def plot_coverage(df_imputed, output_dir):
         .size()
         .unstack(fill_value=0)
     )
-    counts = counts.rename(columns={0: "Original", 1: "L1", 2: "L2", 3: "L3_L2b"})
+    counts = counts.rename(columns={0: "Original", 1: "L1", 2: "L2", 3: "L3"})
     counts = counts.sort_values("Original", ascending=True)
 
     fig, ax = plt.subplots(figsize=(12, 10))
-    counts[["Original", "L1", "L2", "L3_L2b"]].plot(
+    counts[["Original", "L1", "L2", "L3"]].plot(
         kind="barh", stacked=True, ax=ax, color=["#4A6FA5", "#8FB8ED", "#F4A261", "#2A9D8F"]
     )
     ax.set_xlabel("Numero de registros")
@@ -430,7 +430,7 @@ def main():
     report.append(f"- **Datos originales:** {n_orig:,} ({100*n_orig/n_total:.2f}%)")
     report.append(f"- **Imputados L1:** {n_l1:,} ({100*n_l1/n_total:.2f}%)")
     report.append(f"- **Imputados L2:** {n_l2:,} ({100*n_l2/n_total:.2f}%)")
-    report.append(f"- **Imputados L3/L2b:** {n_l3:,} ({100*n_l3/n_total:.2f}%)")
+    report.append(f"- **Imputados L3:** {n_l3:,} ({100*n_l3/n_total:.2f}%)")
     report.append("")
     report.append("## Modelos H-H seleccionados")
     report.append("")
@@ -444,14 +444,14 @@ def main():
     report.append("## Cobertura por estacion")
     report.append("")
     report.append(
-        "| Estacion | Inicio | Fin | Dias | Cobertura % | L1 | L2 | L3/L2b | NaN restantes |"
+        "| Estacion | Inicio | Fin | Dias | Cobertura % | L1 | L2 | L3 | NaN restantes |"
     )
-    report.append("|----------|--------|-----|------|-------------|----|----|--------|---------------|")
+    report.append("|----------|--------|-----|------|-------------|----|----|----|---------------|")
     for _, row in df_resumen.iterrows():
         report.append(
             f"| {row['Estacion']} | {row['Fecha_Inicio']} | {row['Fecha_Fin']} | "
             f"{row['Dias_Rango']} | {row['Cobertura_Rango_pct']} | "
-            f"{row['L1']} | {row['L2']} | {row.get('L3_L2b', 0)} | {row['NaN_Restantes_Rango']} |"
+            f"{row['L1']} | {row['L2']} | {row.get('L3', 0)} | {row['NaN_Restantes_Rango']} |"
         )
     report.append("")
     report.append("## Validaciones")
@@ -476,11 +476,11 @@ def main():
     report.append("## Archivos generados")
     report.append("")
     report.append("- `Datos_Imputados.csv`")
-    report.append("- `Datos_Imputados_sin_L2b.csv`")
+    report.append("- `Datos_Imputados_sin_L3.csv`")
     report.append("- `Resumen_Imputacion.csv`")
     report.append("- `Tabla_Modelos_HH.csv`")
     report.append("- `Tabla_Modelos_HH_Seleccionados.csv`")
-    report.append("- `Tabla_Modelos_L2b.csv`")
+    report.append("- `Tabla_Modelos_L3.csv`")
     report.append("- `validacion_violaciones_rango.csv`")
     report.append("- `validacion_violaciones_rango_temporal.csv`")
     report.append("- `validacion_saltos_temporales.csv`")

@@ -3,7 +3,7 @@ imputers.py
 ===========
 
 Imputadores de nivel L1 (interpolacion local), L2 (curvas H-H) y
-L3 / L2b (segunda donante H-H complementaria).
+L3 (segunda donante H-H complementaria).
 """
 
 import numpy as np
@@ -136,7 +136,7 @@ def apply_l2_hh_imputation(df_wide, model, official_ranges=None):
 def apply_l3_hh_imputation(df_wide, target, donor, df_wide_orig, official_ranges,
                            r2_min=0.65, pearson_min=0.8, min_n_train=50):
     """
-    Aplica una segunda donante H-H complementaria (L3 / L2b) a una estacion objetivo.
+    Aplica una segunda donante H-H complementaria (L3) a una estacion objetivo.
 
     - Entrena el modelo usando SOLO datos originales (L0) del objetivo.
     - Usa como donante valores originales o ya imputados (L1/L2/L3 previos).

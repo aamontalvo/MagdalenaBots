@@ -8,7 +8,7 @@ Niveles de imputacion:
     0 = Original
     1 = L1 - Interpolacion local
     2 = L2 - H-H cuadratica (primera donante)
-    3 = L3 - H-H cuadratica complementaria (segunda donante, L2b)
+    3 = L3 - H-H cuadratica complementaria (segunda donante)
 """
 
 import pandas as pd
@@ -21,19 +21,19 @@ def build_tracked_dataset(
     df_wide_after_l1,
     df_wide_after_l2=None,
     official_ranges=None,
-    l2b_models=None,
+    l3_models=None,
 ):
     """
     Construye dataset LONG con tracking de nivel de imputacion y metodo.
 
     Parametros:
-        df_wide_final: DataFrame wide con valores finales (puede incluir L2b).
+        df_wide_final: DataFrame wide con valores finales (puede incluir L3).
         df_wide_orig: DataFrame wide con datos originales (L0).
         df_wide_after_l1: DataFrame wide despues de L1.
-        df_wide_after_l2: DataFrame wide despues de L2 (antes de L2b). Opcional.
+        df_wide_after_l2: DataFrame wide despues de L2 (antes de L3). Opcional.
         official_ranges: dict {estacion: (inicio, fin)}. Si se proporciona,
                          se descartan filas fuera del rango oficial.
-        l2b_models: dict {objetivo: {"donante": str}} con modelos L2b aplicados.
+        l3_models: dict {objetivo: {"donante": str}} con modelos L3 aplicados.
 
     Columnas de salida:
         Fecha, NombreEstacion, Cota, Nivel_Imputacion, Metodo
@@ -63,7 +63,7 @@ def build_tracked_dataset(
         mask_l2 = (
             mask_orig_nan & df_wide_after_l1[col].isna() & wide_l2[col].notna()
         )
-        mask_l2b = (
+        mask_l3 = (
             mask_orig_nan
             & wide_l2[col].isna()
             & df_wide_final[col].notna()
@@ -71,7 +71,7 @@ def build_tracked_dataset(
 
         fechas_l1 = df_wide_orig.index[mask_l1]
         fechas_l2 = df_wide_orig.index[mask_l2]
-        fechas_l2b = df_wide_orig.index[mask_l2b]
+        fechas_l3 = df_wide_orig.index[mask_l3]
 
         df_long.loc[
             (df_long[COL_STATION] == col) & df_long[COL_DATE].isin(fechas_l1),
@@ -83,10 +83,10 @@ def build_tracked_dataset(
             ["Nivel_Imputacion", "Metodo"],
         ] = [2, f"L2_HH_{col}_quadratic"]
 
-        if l2b_models and col in l2b_models:
-            donor = l2b_models[col]["donante"]
+        if l3_models and col in l3_models:
+            donor = l3_models[col]["donante"]
             df_long.loc[
-                (df_long[COL_STATION] == col) & df_long[COL_DATE].isin(fechas_l2b),
+                (df_long[COL_STATION] == col) & df_long[COL_DATE].isin(fechas_l3),
                 ["Nivel_Imputacion", "Metodo"],
             ] = [3, f"L3_HH_{col}_vs_{donor}"]
 
