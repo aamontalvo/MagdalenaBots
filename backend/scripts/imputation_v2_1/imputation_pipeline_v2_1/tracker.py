@@ -3,20 +3,40 @@ tracker.py
 ==========
 
 Tracking de metodos de imputacion en el dataset final.
+
+Niveles de imputacion:
+    0 = Original
+    1 = L1 - Interpolacion local
+    2 = L2 - H-H cuadratica (primera donante)
+    3 = L3 - H-H cuadratica complementaria (segunda donante, L2b)
 """
 
 import pandas as pd
 from .config import COL_DATE, COL_STATION, COL_LEVEL
 
 
-def build_tracked_dataset(df_wide_final, df_wide_orig, df_wide_after_l1, official_ranges=None):
+def build_tracked_dataset(
+    df_wide_final,
+    df_wide_orig,
+    df_wide_after_l1,
+    df_wide_after_l2=None,
+    official_ranges=None,
+    l2b_models=None,
+):
     """
     Construye dataset LONG con tracking de nivel de imputacion y metodo.
 
+    Parametros:
+        df_wide_final: DataFrame wide con valores finales (puede incluir L2b).
+        df_wide_orig: DataFrame wide con datos originales (L0).
+        df_wide_after_l1: DataFrame wide despues de L1.
+        df_wide_after_l2: DataFrame wide despues de L2 (antes de L2b). Opcional.
+        official_ranges: dict {estacion: (inicio, fin)}. Si se proporciona,
+                         se descartan filas fuera del rango oficial.
+        l2b_models: dict {objetivo: {"donante": str}} con modelos L2b aplicados.
+
     Columnas de salida:
         Fecha, NombreEstacion, Cota, Nivel_Imputacion, Metodo
-
-    Si se proporciona official_ranges, se descartan filas fuera del rango oficial.
     """
     df_long = (
         df_wide_final.reset_index()
@@ -34,15 +54,24 @@ def build_tracked_dataset(df_wide_final, df_wide_orig, df_wide_after_l1, officia
     df_long["Nivel_Imputacion"] = 0
     df_long["Metodo"] = "Original"
 
+    # Referencia post-L2: si no se proporciona, asumimos que el final es post-L2
+    wide_l2 = df_wide_after_l2 if df_wide_after_l2 is not None else df_wide_final
+
     for col in df_wide_final.columns:
         mask_orig_nan = df_wide_orig[col].isna()
         mask_l1 = mask_orig_nan & df_wide_after_l1[col].notna()
         mask_l2 = (
-            mask_orig_nan & df_wide_after_l1[col].isna() & df_wide_final[col].notna()
+            mask_orig_nan & df_wide_after_l1[col].isna() & wide_l2[col].notna()
+        )
+        mask_l2b = (
+            mask_orig_nan
+            & wide_l2[col].isna()
+            & df_wide_final[col].notna()
         )
 
         fechas_l1 = df_wide_orig.index[mask_l1]
         fechas_l2 = df_wide_orig.index[mask_l2]
+        fechas_l2b = df_wide_orig.index[mask_l2b]
 
         df_long.loc[
             (df_long[COL_STATION] == col) & df_long[COL_DATE].isin(fechas_l1),
@@ -53,6 +82,13 @@ def build_tracked_dataset(df_wide_final, df_wide_orig, df_wide_after_l1, officia
             (df_long[COL_STATION] == col) & df_long[COL_DATE].isin(fechas_l2),
             ["Nivel_Imputacion", "Metodo"],
         ] = [2, f"L2_HH_{col}_quadratic"]
+
+        if l2b_models and col in l2b_models:
+            donor = l2b_models[col]["donante"]
+            df_long.loc[
+                (df_long[COL_STATION] == col) & df_long[COL_DATE].isin(fechas_l2b),
+                ["Nivel_Imputacion", "Metodo"],
+            ] = [3, f"L3_HH_{col}_vs_{donor}"]
 
     if official_ranges:
         mask_keep = pd.Series(False, index=df_long.index)

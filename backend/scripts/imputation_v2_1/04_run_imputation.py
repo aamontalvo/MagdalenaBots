@@ -3,16 +3,28 @@
 04_run_imputation.py
 ====================
 
-PASO 2 del pipeline v2.1: imputacion en cascada L1 -> L2.
+PASO 2 del pipeline v2.1+: imputacion en cascada L1 -> L2 -> L3(L2b).
 
 Requiere:
 - Resumen_Crudos_IDEAM_2026_v2_1.csv
 - Tabla_Modelos_HH_Seleccionados.csv (generado por 03_hh_discovery.py)
+- resumen_rangos_estaciones.csv (generado por 02_prepare_dataset.py)
 
 Salidas:
 - Datos_Imputados.csv
 - Resumen_Imputacion.csv
+- Tabla_Modelos_L2b.csv
 - log_imputacion.txt
+
+Asunciones y reglas:
+- No hay restriccion de orientacion geografica para donantes H-H.
+- Cada estacion tiene un rango oficial; no se imputa fuera de ese rango.
+- L1: interpolacion local para gaps <= 3 dias, sin tocar bordes del rango.
+- L2: primera donante H-H cuadratica (mayor R2 >= 0.75).
+- L3 / L2b: segunda donante H-H complementaria para estaciones con cobertura < 95%
+  tras L2. Se selecciona por maxima cobertura de NaN restantes con R2 >= 0.65
+  y Pearson >= 0.8, entrenando solo con datos originales del objetivo.
+- Hard rules: clip defensivo al rango observado original (sanity check numerico).
 """
 
 import sys
@@ -24,6 +36,8 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
 import pandas as pd
+import numpy as np
+from scipy import stats
 from imputation_pipeline_v2_1.loaders import (
     load_raw_data,
     to_wide_format,
@@ -33,6 +47,7 @@ from imputation_pipeline_v2_1.loaders import (
 from imputation_pipeline_v2_1.imputers import (
     apply_l1_interpolation,
     apply_l2_hh_imputation,
+    apply_l3_hh_imputation,
 )
 from imputation_pipeline_v2_1.hard_rules import (
     compute_original_ranges,
@@ -64,6 +79,11 @@ OUTPUT_DIR = (
     PROJECT_ROOT / "backend" / "data" / "work" / "imputation_v2_1" / "output"
 )
 
+COBERTURA_MIN_L2B = 95.0
+R2_MIN_L2B = 0.65
+PEARSON_MIN_L2B = 0.8
+MIN_N_TRAIN_L2B = 50
+
 
 def load_selected_models(output_dir):
     """Carga modelos H-H seleccionados desde CSV generado por paso 1."""
@@ -77,6 +97,36 @@ def load_selected_models(output_dir):
     return df.to_dict("records")
 
 
+def select_best_l2b_donor(df_wide_l2, df_wide_orig, target, official_ranges, all_stations):
+    """
+    Selecciona la mejor segunda donante para una estacion objetivo.
+    Criterio: maxima cobertura de NaN restantes, con R2 >= 0.65 y r >= 0.8.
+    """
+    best = None
+    best_cover = -1
+
+    for donor in all_stations:
+        if donor == target:
+            continue
+        model, n_imp = apply_l3_hh_imputation(
+            df_wide_l2.copy(),
+            target,
+            donor,
+            df_wide_orig,
+            official_ranges,
+            r2_min=R2_MIN_L2B,
+            pearson_min=PEARSON_MIN_L2B,
+            min_n_train=MIN_N_TRAIN_L2B,
+        )
+        if model is None:
+            continue
+        if n_imp > best_cover:
+            best_cover = n_imp
+            best = {"donante": donor, "modelo": model, "n_imp": n_imp}
+
+    return best
+
+
 if __name__ == "__main__":
     output_dir = Path(OUTPUT_DIR)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -87,28 +137,28 @@ if __name__ == "__main__":
         log_lines.append(msg)
 
     log("=" * 70)
-    log("PASO 2: Imputacion en cascada v2.1 (L1 -> L2)")
+    log("PASO 2: Imputacion en cascada v2.1+ (L1 -> L2 -> L3/L2b)")
     log("=" * 70)
     log(f"Datos de entrada : {DATA_PATH}")
     log(f"Salida           : {OUTPUT_DIR}")
     log("")
 
-    log("[1/6] Cargando datos crudos...")
+    log("[1/7] Cargando datos crudos...")
     t0 = time.time()
     df_long = load_raw_data(DATA_PATH, date_format="%Y-%m-%d")
     log(f"      {time.time()-t0:.1f}s - {len(df_long):,} registros")
 
-    log("[2/6] Cargando modelos H-H seleccionados...")
+    log("[2/7] Cargando modelos H-H seleccionados...")
     modelos = load_selected_models(output_dir)
     log(f"      {len(modelos)} modelos cargados")
     for m in modelos:
         log(f"      {m['objetivo']} <- {m['donante']}  (R2={m['r2']:.4f})")
 
-    log("\n[3/6] Cargando rangos oficiales de estaciones...")
+    log("\n[3/7] Cargando rangos oficiales de estaciones...")
     official_ranges = load_official_ranges(RANGES_PATH)
     log(f"      Rangos cargados para {len(official_ranges)} estaciones")
 
-    log("\n[4/6] Preparando datos...")
+    log("\n[4/7] Preparando datos...")
     t0 = time.time()
     df_wide_orig = to_wide_format(df_long)
     apply_range_mask(df_wide_orig, official_ranges)
@@ -118,7 +168,7 @@ if __name__ == "__main__":
         f"{len(df_wide_orig.columns)} estaciones"
     )
 
-    log("\n[5/6] Aplicando L1 - Interpolacion local...")
+    log("\n[5/7] Aplicando L1 - Interpolacion local...")
     t0 = time.time()
     df_wide_l1 = df_wide_orig.copy()
     l1_counts = {}
@@ -129,7 +179,7 @@ if __name__ == "__main__":
     total_l1 = sum(l1_counts.values())
     log(f"      {time.time()-t0:.1f}s - Total L1: {total_l1:,}")
 
-    log("\n[6/6] Aplicando L2 - H-H cuadratica...")
+    log("\n[6/7] Aplicando L2 - H-H cuadratica...")
     t0 = time.time()
     df_wide_l2 = df_wide_l1.copy()
     l2_counts = {}
@@ -141,29 +191,110 @@ if __name__ == "__main__":
     total_l2 = sum(l2_counts.values())
     log(f"      {time.time()-t0:.1f}s - Total L2: {total_l2:,}")
 
-    log("\nAplicando hard rules...")
+    log("\n[7/7] Aplicando L3/L2b - Segunda donante H-H complementaria...")
     t0 = time.time()
-    clipped = apply_hard_rule_clip(df_wide_l2, rangos)
-    if clipped:
-        log(f"      Valores clipeados: {sum(clipped.values())}")
-    violations = verify_no_outliers(df_wide_l2, rangos)
-    log(f"      {time.time()-t0:.1f}s - Violaciones: {len(violations)}")
+    df_wide_l3 = df_wide_l2.copy()
+    l3_counts = {}
+    l3_models = []
+    l3_model_dict = {}
 
-    log("\nGuardando resultados...")
-    df_long_final = build_tracked_dataset(df_wide_l2, df_wide_orig, df_wide_l1, official_ranges=official_ranges)
-    df_long_final.to_csv(output_dir / "Datos_Imputados.csv", index=False)
-    log(f"      Datos_Imputados.csv  ({len(df_long_final):,} registros)")
-
-    resumen = []
-    for col in df_wide_l2.columns:
+    all_stations = list(df_wide_l3.columns)
+    for col in df_wide_l3.columns:
         if col not in official_ranges:
             continue
         start, end = official_ranges[col]
         mask_range = (df_wide_l2.index >= start) & (df_wide_l2.index <= end)
+        n_total = mask_range.sum()
+        n_nan_l2 = df_wide_l2.loc[mask_range, col].isna().sum()
+        cobertura_l2 = (n_total - n_nan_l2) / n_total * 100
 
-        s_final = df_wide_l2.loc[mask_range, col]
-        s_orig = df_wide_orig.loc[mask_range, col]
+        if cobertura_l2 >= COBERTURA_MIN_L2B:
+            continue
 
+        log(f"      {col}: cobertura L2 = {cobertura_l2:.2f}%, buscando segunda donante...")
+        best = select_best_l2b_donor(df_wide_l2, df_wide_orig, col, official_ranges, all_stations)
+        if best is None:
+            log(f"      {col}: no se encontro donante L2b viable")
+            continue
+
+        donor = best["donante"]
+        model = best["modelo"]
+        model_l3, n_imp = apply_l3_hh_imputation(
+            df_wide_l3,
+            col,
+            donor,
+            df_wide_orig,
+            official_ranges,
+            r2_min=R2_MIN_L2B,
+            pearson_min=PEARSON_MIN_L2B,
+            min_n_train=MIN_N_TRAIN_L2B,
+        )
+        if n_imp > 0:
+            l3_counts[col] = n_imp
+            l3_model_dict[col] = {"donante": donor}
+            l3_models.append(
+                {
+                    "objetivo": col,
+                    "donante": donor,
+                    "r": round(model["r"], 4),
+                    "r2": round(model["r2"], 4),
+                    "n_train": int(model["n_train"]),
+                    "n_imp": int(n_imp),
+                    "a": model["a"],
+                    "b": model["b"],
+                    "c": model["c"],
+                }
+            )
+            log(
+                f"      {col:<18} <- {donor:<18} : {n_imp:>4} valores  "
+                f"(R2={model['r2']:.4f}, r={model['r']:.4f})"
+            )
+
+    total_l3 = sum(l3_counts.values())
+    log(f"      {time.time()-t0:.1f}s - Total L3/L2b: {total_l3:,}")
+
+    if l3_models:
+        pd.DataFrame(l3_models).to_csv(output_dir / "Tabla_Modelos_L2b.csv", index=False)
+        log(f"      Guardado: Tabla_Modelos_L2b.csv")
+
+    log("\nAplicando hard rules (clip defensivo)...")
+    t0 = time.time()
+    clipped = apply_hard_rule_clip(df_wide_l3, rangos, verbose=False)
+    if clipped:
+        log(f"      Valores clipeados: {sum(clipped.values())}")
+    violations = verify_no_outliers(df_wide_l3, rangos)
+    log(f"      {time.time()-t0:.1f}s - Violaciones: {len(violations)}")
+
+    log("\nGuardando resultados...")
+    df_long_final = build_tracked_dataset(
+        df_wide_l3,
+        df_wide_orig,
+        df_wide_l1,
+        df_wide_after_l2=df_wide_l2,
+        official_ranges=official_ranges,
+        l2b_models=l3_model_dict,
+    )
+    df_long_final.to_csv(output_dir / "Datos_Imputados.csv", index=False)
+    log(f"      Datos_Imputados.csv  ({len(df_long_final):,} registros)")
+
+    # Backup del resultado sin L2b
+    df_long_l2_only = build_tracked_dataset(
+        df_wide_l2,
+        df_wide_orig,
+        df_wide_l1,
+        official_ranges=official_ranges,
+    )
+    df_long_l2_only.to_csv(output_dir / "Datos_Imputados_sin_L2b.csv", index=False)
+    log(f"      Datos_Imputados_sin_L2b.csv  ({len(df_long_l2_only):,} registros)")
+
+    resumen = []
+    for col in df_wide_l3.columns:
+        if col not in official_ranges:
+            continue
+        start, end = official_ranges[col]
+        mask_range = (df_wide_l3.index >= start) & (df_wide_l3.index <= end)
+
+        s_final = df_wide_l3.loc[mask_range, col]
         n_total_range = mask_range.sum()
         n_nan_range = s_final.isna().sum()
         is_desc = col in DESCARTADAS
@@ -178,6 +309,7 @@ if __name__ == "__main__":
                 "Cobertura_Rango_pct": round((n_total_range - n_nan_range) / n_total_range * 100, 2),
                 "L1": l1_counts.get(col, 0),
                 "L2": l2_counts.get(col, 0),
+                "L3_L2b": l3_counts.get(col, 0),
                 "Descartada": is_desc,
                 "Status": "OK" if (n_nan_range == 0 or is_desc) else "INCOMPLETA",
             }
@@ -195,7 +327,8 @@ if __name__ == "__main__":
     log(f"Dataset final   : {len(df_long_final):,} registros")
     log(f"Imputados L1    : {total_l1:,}")
     log(f"Imputados L2    : {total_l2:,}")
-    log(f"Total imputados : {total_l1 + total_l2:,}")
+    log(f"Imputados L3/L2b: {total_l3:,}")
+    log(f"Total imputados : {total_l1 + total_l2 + total_l3:,}")
 
     no_desc = df_resumen[~df_resumen["Descartada"]]
     incompletas = no_desc[no_desc["Status"] == "INCOMPLETA"]
