@@ -29,6 +29,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
 
+from imputation_pipeline_v2_1.config import display_name
+
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 WORK_DIR = PROJECT_ROOT / "backend" / "data" / "work" / "imputation_v2_1"
 OUTPUT_DIR = WORK_DIR / "output"
@@ -271,7 +273,7 @@ def plot_station_audit(station, df_imp, df_raw, model, student_data, official_ra
         ax5.text(0.5, 0.5, "Sin modelo H-H seleccionado", ha="center", va="center", transform=ax5.transAxes)
         ax5.set_title("Relacion H-H", fontweight="bold")
 
-    fig.suptitle(f"Auditoria de imputacion v2.1 - Estacion: {station} ({start.date()} a {end.date()})", fontsize=16, fontweight="bold", y=0.995)
+    fig.suptitle(f"Auditoria de imputacion v2.1 - {display_name(station)} ({start.date()} a {end.date()})", fontsize=16, fontweight="bold", y=0.995)
 
     fig_path = FIGURES_DIR / f"auditoria_{station}.png"
     plt.savefig(fig_path, dpi=200, bbox_inches="tight")

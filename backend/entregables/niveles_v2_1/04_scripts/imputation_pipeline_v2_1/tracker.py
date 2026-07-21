@@ -1,0 +1,104 @@
+"""
+tracker.py
+==========
+
+Tracking de metodos de imputacion en el dataset final.
+
+Niveles de imputacion:
+    0 = Original
+    1 = L1 - Interpolacion local
+    2 = L2 - H-H cuadratica (primera donante)
+    3 = L3 - H-H cuadratica complementaria (segunda donante)
+"""
+
+import pandas as pd
+from .config import COL_DATE, COL_STATION, COL_LEVEL
+
+
+def build_tracked_dataset(
+    df_wide_final,
+    df_wide_orig,
+    df_wide_after_l1,
+    df_wide_after_l2=None,
+    official_ranges=None,
+    l3_models=None,
+):
+    """
+    Construye dataset LONG con tracking de nivel de imputacion y metodo.
+
+    Parametros:
+        df_wide_final: DataFrame wide con valores finales (puede incluir L3).
+        df_wide_orig: DataFrame wide con datos originales (L0).
+        df_wide_after_l1: DataFrame wide despues de L1.
+        df_wide_after_l2: DataFrame wide despues de L2 (antes de L3). Opcional.
+        official_ranges: dict {estacion: (inicio, fin)}. Si se proporciona,
+                         se descartan filas fuera del rango oficial.
+        l3_models: dict {objetivo: {"donante": str}} con modelos L3 aplicados.
+
+    Columnas de salida:
+        Fecha, NombreEstacion, Cota, Nivel_Imputacion, Metodo
+    """
+    df_long = (
+        df_wide_final.reset_index()
+        .melt(
+            id_vars=[df_wide_final.index.name or COL_DATE],
+            var_name=COL_STATION,
+            value_name=COL_LEVEL,
+        )
+    )
+
+    fecha_col = df_long.columns[0]
+    if fecha_col != COL_DATE:
+        df_long = df_long.rename(columns={fecha_col: COL_DATE})
+
+    df_long["Nivel_Imputacion"] = 0
+    df_long["Metodo"] = "Original"
+
+    # Referencia post-L2: si no se proporciona, asumimos que el final es post-L2
+    wide_l2 = df_wide_after_l2 if df_wide_after_l2 is not None else df_wide_final
+
+    for col in df_wide_final.columns:
+        mask_orig_nan = df_wide_orig[col].isna()
+        mask_l1 = mask_orig_nan & df_wide_after_l1[col].notna()
+        mask_l2 = (
+            mask_orig_nan & df_wide_after_l1[col].isna() & wide_l2[col].notna()
+        )
+        mask_l3 = (
+            mask_orig_nan
+            & wide_l2[col].isna()
+            & df_wide_final[col].notna()
+        )
+
+        fechas_l1 = df_wide_orig.index[mask_l1]
+        fechas_l2 = df_wide_orig.index[mask_l2]
+        fechas_l3 = df_wide_orig.index[mask_l3]
+
+        df_long.loc[
+            (df_long[COL_STATION] == col) & df_long[COL_DATE].isin(fechas_l1),
+            ["Nivel_Imputacion", "Metodo"],
+        ] = [1, "L1_Interpolacion"]
+
+        df_long.loc[
+            (df_long[COL_STATION] == col) & df_long[COL_DATE].isin(fechas_l2),
+            ["Nivel_Imputacion", "Metodo"],
+        ] = [2, f"L2_HH_{col}_quadratic"]
+
+        if l3_models and col in l3_models:
+            donor = l3_models[col]["donante"]
+            df_long.loc[
+                (df_long[COL_STATION] == col) & df_long[COL_DATE].isin(fechas_l3),
+                ["Nivel_Imputacion", "Metodo"],
+            ] = [3, f"L3_HH_{col}_vs_{donor}"]
+
+    if official_ranges:
+        mask_keep = pd.Series(False, index=df_long.index)
+        for col in df_long[COL_STATION].unique():
+            if col not in official_ranges:
+                continue
+            start, end = official_ranges[col]
+            mask_station = df_long[COL_STATION] == col
+            mask_in_range = (df_long[COL_DATE] >= start) & (df_long[COL_DATE] <= end)
+            mask_keep = mask_keep | (mask_station & mask_in_range)
+        df_long = df_long[mask_keep]
+
+    return df_long

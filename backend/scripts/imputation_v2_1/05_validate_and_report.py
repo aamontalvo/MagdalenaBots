@@ -25,6 +25,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
 
+from imputation_pipeline_v2_1.config import display_name, geo_sorted
+
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 WORK_DIR = PROJECT_ROOT / "backend" / "data" / "work" / "imputation_v2_1"
 OUTPUT_DIR = WORK_DIR / "output"
@@ -224,7 +226,8 @@ def plot_coverage(df_imputed, output_dir):
         .unstack(fill_value=0)
     )
     counts = counts.rename(columns={0: "Original", 1: "L1", 2: "L2", 3: "L3"})
-    counts = counts.sort_values("Original", ascending=True)
+    counts = counts.reindex(geo_sorted(counts.index))
+    counts.index = [display_name(s) for s in counts.index]
 
     fig, ax = plt.subplots(figsize=(12, 10))
     counts[["Original", "L1", "L2", "L3"]].plot(
@@ -234,6 +237,7 @@ def plot_coverage(df_imputed, output_dir):
     ax.set_ylabel("Estacion")
     ax.set_title("Cobertura y niveles de imputacion v2.1", fontweight="bold")
     ax.legend(title="Nivel", loc="lower right")
+    ax.invert_yaxis()
     plt.tight_layout()
     fig_path = output_dir / "figura_cobertura_imputacion.png"
     plt.savefig(fig_path, dpi=300, bbox_inches="tight")
@@ -242,7 +246,7 @@ def plot_coverage(df_imputed, output_dir):
 
 def plot_sample_series(df_imputed, output_dir, n_stations=8):
     """Genera figura con series temporales de ejemplo."""
-    stations = sorted(df_imputed["NombreEstacion"].unique())[:n_stations]
+    stations = geo_sorted(df_imputed["NombreEstacion"].unique())[:n_stations]
     fig, axes = plt.subplots(n_stations, 1, figsize=(14, 3 * n_stations), sharex=True)
     if n_stations == 1:
         axes = [axes]
@@ -254,7 +258,7 @@ def plot_sample_series(df_imputed, output_dir, n_stations=8):
         ax.scatter(orig["Fecha"], orig["Cota"], s=1, label="Original", color="#4A6FA5")
         ax.scatter(imp["Fecha"], imp["Cota"], s=1, label="Imputado", color="#F4A261")
         ax.set_ylabel("Cota (m)")
-        ax.set_title(station, fontweight="bold")
+        ax.set_title(display_name(station), fontweight="bold")
         ax.legend(loc="upper right")
         ax.grid(alpha=0.3)
 
@@ -302,9 +306,11 @@ def plot_null_heatmaps(df_prepared, df_imputed, official_ranges, output_dir):
         mask_keep2 = mask_keep2 | m
     df_imputed_f = df_imputed_f[mask_keep2]
 
-    station_order = sorted(official_ranges.keys())
+    station_order = geo_sorted(official_ranges.keys())
     mat_before = build_na_matrix(df_prepared_f, station_order)
     mat_after = build_na_matrix(df_imputed_f, station_order)
+
+    ytick_labels = [display_name(s) for s in station_order]
 
     # Samplear fechas para no matar la memoria visual (max ~2000 filas)
     if len(mat_before) > 2000:
@@ -322,7 +328,7 @@ def plot_null_heatmaps(df_prepared, df_imputed, official_ranges, output_dir):
         cbar=False,
         ax=axes[0],
         xticklabels=False,
-        yticklabels=True,
+        yticklabels=ytick_labels,
     )
     axes[0].set_title("ANTES de imputacion - Datos disponibles (verde=con dato, rojo=nulo)",
                       fontweight="bold", fontsize=14)
@@ -337,7 +343,7 @@ def plot_null_heatmaps(df_prepared, df_imputed, official_ranges, output_dir):
         cbar=False,
         ax=axes[1],
         xticklabels=False,
-        yticklabels=True,
+        yticklabels=ytick_labels,
     )
     axes[1].set_title("DESPUES de imputacion - Datos disponibles (verde=con dato, rojo=nulo)",
                       fontweight="bold", fontsize=14)

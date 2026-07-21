@@ -16,6 +16,8 @@ from pathlib import Path
 import scipy.stats as stats
 import warnings
 
+from imputation_pipeline_v2_1.config import display_name, geo_sorted
+
 warnings.filterwarnings("ignore")
 
 plt.rcParams["font.size"] = 10
@@ -85,16 +87,16 @@ def plot_serie_tiempo(station_df, station, output_path):
     valid_data = station_df[station_df["Cota"].notna()]
     ax.plot(valid_data["date"], valid_data["Cota"], "k-", linewidth=0.8)
 
-    total_valid = len(valid_data)
+    total_records = len(station_df)
     original_count = (station_df["data_source"] == "original").sum()
-    imputed_count = total_valid - original_count
-    pct_original = (original_count / total_valid) * 100 if total_valid > 0 else 0
-    pct_imputed = (imputed_count / total_valid) * 100 if total_valid > 0 else 0
+    imputed_count = total_records - original_count
+    pct_original = (original_count / total_records) * 100 if total_records > 0 else 0
+    pct_imputed = (imputed_count / total_records) * 100 if total_records > 0 else 0
     year_start = int(station_df["year"].min())
     year_end = int(station_df["year"].max())
 
     annotation_text = (
-        f"Periodo: {year_start}-{year_end} | Total: {total_valid:,} observaciones\n"
+        f"Periodo: {year_start}-{year_end} | Total: {total_records:,} registros\n"
         f"Originales: {pct_original:.1f}% | Imputados: {pct_imputed:.1f}%"
     )
     ax.text(
@@ -104,7 +106,7 @@ def plot_serie_tiempo(station_df, station, output_path):
         bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.9),
     )
     ax.set_title(
-        f"Serie de Tiempo de Cotas - {station.replace('_', ' ')}",
+        f"Serie de Tiempo de Cotas - {display_name(station, with_code=True)}",
         fontsize=13, fontweight="bold",
     )
     ax.set_xlabel("Fecha", fontsize=11)
@@ -162,7 +164,7 @@ def plot_violin_mensual(station_df, station, output_path):
     ax.set_xticks(range(1, 13))
     ax.set_xticklabels(MESES)
     ax.set_title(
-        f"Distribucion Mensual de Cotas - {station.replace('_', ' ')}",
+        f"Distribucion Mensual de Cotas - {display_name(station, with_code=True)}",
         fontsize=13, fontweight="bold",
     )
     ax.set_xlabel("Mes", fontsize=11)
@@ -213,7 +215,7 @@ def plot_curva_duracion(station_df, station, output_path):
             bbox=dict(boxstyle="round", facecolor="white", alpha=0.9, edgecolor="gray"))
 
     ax.set_title(
-        f"Curva de Duracion - {station.replace('_', ' ').upper()}",
+        f"Curva de Duracion - {display_name(station, with_code=True)}",
         fontsize=14, fontweight="bold",
     )
     ax.set_xlabel("Porcentaje de tiempo excedido (%)", fontsize=12)
@@ -318,7 +320,7 @@ def plot_curvas_excedidos(station_df, station, output_path):
     ax.set_xlabel("Mes", fontsize=12, fontweight="bold")
     ax.set_ylabel("Cota (m)", fontsize=12, fontweight="bold")
     ax.set_title(
-        f"Curvas de Frecuencia de Niveles Excedidos - {station.replace('_', ' ').upper()}",
+        f"Curvas de Frecuencia de Niveles Excedidos - {display_name(station, with_code=True)}",
         fontsize=14, fontweight="bold", pad=20,
     )
 
@@ -362,7 +364,7 @@ def plot_ajuste_distribuciones(station_df, station, output_path):
         pass
 
     ax1.set_title(
-        f"Ajuste de Distribuciones - {station.replace('_', ' ')}\nAnual",
+        f"Ajuste de Distribuciones - {display_name(station, with_code=True)}\nAnual",
         fontsize=12, fontweight="bold",
     )
     ax1.set_xlabel("Cota (m.s.n.m.)", fontsize=11)
@@ -392,6 +394,130 @@ def plot_ajuste_distribuciones(station_df, station, output_path):
     legend_elements = [Line2D([0], [0], color="black", linestyle="--", label="1:1")]
     ax2.legend(handles=legend_elements, loc="upper left", fontsize=9)
 
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=200, bbox_inches="tight", facecolor="white")
+    plt.close()
+    return True
+
+
+def plot_relacion_hh(station_df, station, output_path):
+    """Genera scatter altura-altura para los modelos L2/L3 activos de la estación."""
+    station_data = station_df[station_df["Cota"].notna()].copy()
+    if len(station_data) == 0:
+        return False
+
+    # Identificar qué métodos H-H aparecen en esta estación
+    hh_methods = station_data["Metodo"].dropna().unique()
+    hh_methods = [m for m in hh_methods if m.startswith("L2_HH_") or m.startswith("L3_HH_")]
+    if len(hh_methods) == 0:
+        return False
+
+    # Cargar tablas de modelos
+    project_root = Path(__file__).resolve().parents[3]
+    l2_path = project_root / "backend" / "entregables" / "niveles_v2_1" / "03_modelos" / "Tabla_Modelos_HH_Seleccionados.csv"
+    l3_path = project_root / "backend" / "entregables" / "niveles_v2_1" / "03_modelos" / "Tabla_Modelos_L3.csv"
+
+    l2_models = pd.read_csv(l2_path) if l2_path.exists() else pd.DataFrame()
+    l3_models = pd.read_csv(l3_path) if l3_path.exists() else pd.DataFrame()
+
+    n_plots = len(hh_methods)
+    fig, axes = plt.subplots(1, n_plots, figsize=(7 * n_plots, 6))
+    if n_plots == 1:
+        axes = [axes]
+
+    for ax, method in zip(axes, hh_methods):
+        # Determinar nivel y donante
+        if method.startswith("L2_HH_"):
+            nivel = "L2"
+            # El donante no está en el nombre; buscar en tabla L2 por objetivo
+            model_row = l2_models[l2_models["objetivo"] == station]
+        else:
+            nivel = "L3"
+            donante = method.replace("L3_HH_", "").split("_vs_")[1]
+            model_row = l3_models[(l3_models["objetivo"] == station) & (l3_models["donante"] == donante)]
+
+        # Filtrar puntos imputados con este método
+        imputed_mask = station_data["Metodo"] == method
+        imputed_points = station_data[imputed_mask]
+
+        if len(model_row) == 0:
+            donante_txt = donante if nivel == "L3" else "(buscar en L2)"
+            ax.text(0.5, 0.5, f"Modelo no encontrado\n{station} <- {donante_txt}",
+                    ha="center", va="center", transform=ax.transAxes)
+            ax.set_title(f"{station} <- {donante_txt} ({nivel})")
+            continue
+
+        row = model_row.iloc[0]
+        donante = row["donante"]
+        a, b, c = row["a"], row["b"], row["c"]
+        r_val = row["r"]
+        r2_val = row["r2"]
+        n_train = int(row["n_train"])
+        equation = row.get("equation", f"H = {a:.4f}*H² + {b:.4f}*H + {c:.4f}")
+
+        # Datos de entrenamiento: puntos originales concurrentes con donante
+        df_full = station_data.copy()
+        df_full["donante_cota"] = None  # placeholder
+
+        # Cargar dataset global para obtener donante
+        df_global = load_data()
+        donor_df = df_global[(df_global["NombreEstacion"] == donante) & (df_global["Cota"].notna())].copy()
+        donor_df = donor_df.set_index("date")["Cota"]
+
+        merged = df_full.merge(
+            donor_df.rename(f"{donante}_cota"),
+            left_on="date",
+            right_index=True,
+            how="left"
+        )
+        train_data = merged[
+            (merged["data_source"] == "original") &
+            (merged["Cota"].notna()) &
+            (merged[f"{donante}_cota"].notna())
+        ]
+
+        # Scatter de entrenamiento
+        ax.scatter(
+            train_data[f"{donante}_cota"],
+            train_data["Cota"],
+            alpha=0.4, s=10, color="steelblue",
+            label=f"Entrenamiento (n={len(train_data):,})"
+        )
+
+        # Curva ajustada
+        if len(train_data) > 0:
+            x_min = train_data[f"{donante}_cota"].min()
+            x_max = train_data[f"{donante}_cota"].max()
+            x_range = np.linspace(x_min, x_max, 200)
+            y_fit = a * x_range**2 + b * x_range + c
+            ax.plot(x_range, y_fit, "r-", linewidth=2, label="Curva ajustada")
+
+        ax.set_title(f"{display_name(station)} ← {display_name(donante)} ({nivel})",
+                     fontsize=12, fontweight="bold")
+        ax.set_xlabel(f"Cota donante {display_name(donante)} (m.s.n.m.)", fontsize=11)
+        ax.set_ylabel(f"Cota objetivo {display_name(station)} (m.s.n.m.)", fontsize=11)
+        ax.legend(loc="best", fontsize=9)
+        ax.grid(True, alpha=0.3)
+
+        # Cuadro de texto con métricas
+        textstr = (
+            f"r = {r_val:.3f}\n"
+            f"R² = {r2_val:.3f}\n"
+            f"n_train = {n_train:,}\n"
+            f"{equation}"
+        )
+        ax.text(
+            0.05, 0.95, textstr,
+            transform=ax.transAxes,
+            fontsize=9,
+            verticalalignment="top",
+            bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.9),
+        )
+
+    plt.suptitle(
+        f"Relaciones Altura-Altura - {display_name(station, with_code=True)}",
+        fontsize=14, fontweight="bold", y=1.02
+    )
     plt.tight_layout()
     plt.savefig(output_path, dpi=200, bbox_inches="tight", facecolor="white")
     plt.close()
@@ -439,6 +565,7 @@ def main():
             ("Fig3_Curva_Duracion", plot_curva_duracion),
             ("Fig4_Curvas_Excedidos", plot_curvas_excedidos),
             ("Fig5_Ajuste_Distribuciones", plot_ajuste_distribuciones),
+            ("Fig6_Relacion_HH", plot_relacion_hh),
         ]
 
         for name, func in figuras:
@@ -465,7 +592,7 @@ def main():
     summary_df = pd.DataFrame(stats_summary)
     print(summary_df.to_string(index=False))
     total_figuras = sum(s["figuras_generadas"] for s in stats_summary)
-    print(f"\nTotal figuras generadas: {total_figuras} / {len(ESTACIONES) * 5}")
+    print(f"\nTotal figuras generadas: {total_figuras} / {len(ESTACIONES) * 6}")
     print(f"Directorio: {OUTPUT_DIR}")
 
 
