@@ -1,0 +1,314 @@
+{
+  "corte_datos": "2026-08-24",
+  "niveles": {
+    "raw": {
+      "archivo": "backend\\entregables\\niveles_v2_1\\01_datos_originales\\Resumen_Crudos_IDEAM_2026_v2_1.csv",
+      "filas": 394772,
+      "estaciones": 24,
+      "fecha_min": "1960-01-01",
+      "fecha_max": "2025-12-31",
+      "validos": 335501,
+      "faltantes": 59271,
+      "duplicados_estacion_fecha": 0,
+      "tamano_mb": 10.65
+    },
+    "final": {
+      "archivo": "backend\\entregables\\niveles_v2_1\\02_datos_imputados\\Datos_Imputados.csv",
+      "filas": 394772,
+      "estaciones": 24,
+      "fecha_min": "1960-01-01",
+      "fecha_max": "2025-12-31",
+      "l0_validos": 335501,
+      "l0_incluye_nan": 339937,
+      "l1": 1222,
+      "l2": 36758,
+      "l3": 16855,
+      "imputados": 54835,
+      "nan": 4436,
+      "cobertura_media_pct": 98.87,
+      "cobertura_ponderada_pct": 98.88,
+      "estaciones_100_pct": 12,
+      "estaciones_mayor_95_pct": 23,
+      "estaciones_menor_95_pct": 1,
+      "estaciones_descartadas": 4,
+      "tamano_mb": 16.58
+    },
+    "figuras": {
+      "cartillas": 24,
+      "png_cartillas": 143,
+      "png_globales": 7,
+      "png_total_vigente": 150,
+      "por_tipo": {
+        "Fig1": 24,
+        "Fig2": 24,
+        "Fig3": 24,
+        "Fig4": 24,
+        "Fig5": 24,
+        "Fig6": 23
+      },
+      "csv_percentiles": 24
+    }
+  },
+  "caudales": {
+    "raw_largo": {
+      "archivo": "backend\\data\\raw\\SERIE_CAUDALES\\analisis\\caudales_formato_largo.csv",
+      "filas": 481435,
+      "estaciones": 25,
+      "fecha_min": "1936-01-01",
+      "fecha_max": "2026-12-31",
+      "fecha_max_valida": "2026-03-14",
+      "validos": 433425,
+      "faltantes": 48010,
+      "duplicados_estacion_fecha": 0,
+      "tamano_mb": 19.58
+    },
+    "unificada": {
+      "archivo": "backend\\data\\processed\\caudales_unificados.csv",
+      "filas": 205722,
+      "estaciones": 25,
+      "fechas_unicas": 32946,
+      "lecturas_por_dia_promedio": 6.24,
+      "celdas_validas": 850273,
+      "celdas_faltantes": 4292777,
+      "tamano_mb": 14.74
+    },
+    "final": {
+      "archivo": "backend\\data\\work\\caudales_v1\\output\\Datos_Imputados_Caudales.csv",
+      "filas": 299239,
+      "estaciones": 14,
+      "fecha_min": "1936-01-01",
+      "fecha_max": "2026-03-14",
+      "l0_validos": 262425,
+      "l0_incluye_nan": 270258,
+      "l1": 349,
+      "l2": 28632,
+      "imputados": 28981,
+      "nan": 7833,
+      "cobertura_media_pct": 97.74,
+      "cobertura_ponderada_pct": 97.38,
+      "estaciones_100_pct": 7,
+      "estaciones_mayor_95_pct": 12,
+      "estaciones_menor_95_pct": 2,
+      "pares_nc": 222993,
+      "modelos_nc": 14,
+      "r2_nc_min": 0.6734,
+      "r2_nc_max": 0.9676,
+      "l2_aceptados": 13,
+      "l2_rechazados": 1,
+      "tamano_mb": 12.14
+    },
+    "figuras": {
+      "cartillas": 14,
+      "png_estaciones": 98,
+      "png_globales": 3,
+      "png_total_vigente": 101,
+      "por_tipo": {
+        "Fig1": 14,
+        "Fig2": 14,
+        "Fig3": 14,
+        "Fig4": 14,
+        "Fig6": 14,
+        "Fig5_max": 14,
+        "Fig5_min": 14
+      }
+    }
+  },
+  "informes": {
+    "caudales_mayo": {
+      "parrafos_con_texto": 110,
+      "imagenes": 37,
+      "tablas": 0,
+      "leyendas": 38,
+      "comentarios": 7,
+      "comentaristas": {
+        "Alexander Montalvo Molina": 6,
+        "Stefany Anaya": 1
+      }
+    },
+    "caudales_julio": {
+      "parrafos_con_texto": 175,
+      "imagenes": 57,
+      "tablas": 0,
+      "leyendas": 37,
+      "comentarios": 11,
+      "comentaristas": {
+        "Alexander Montalvo Molina": 8,
+        "Proyectos HYCEN": 3
+      }
+    },
+    "niveles_julio": {
+      "parrafos_con_texto": 424,
+      "imagenes": 105,
+      "tablas": 4,
+      "leyendas": 112,
+      "comentarios": 19,
+      "comentaristas": {
+        "Stefany Anaya": 10,
+        "Alexander Montalvo Molina": 9
+      }
+    },
+    "estaciones": {
+      "niveles_incluidas": [
+        "ARMENIA",
+        "BARBOSA",
+        "BARRANCABERMEJA",
+        "CALAMAR",
+        "COYONGAL",
+        "EL_BANCO",
+        "EL_CONTENTO",
+        "GAMARRA",
+        "GAMARRA_AUT",
+        "LAS_AGUADAS",
+        "LAS_PALOMAS",
+        "LA_GLORIA",
+        "MAGANGUE",
+        "PENONCITO",
+        "PLATO",
+        "PUERTO_BERRIO",
+        "PUERTO_SALGAR",
+        "PUERTO_WILCHES",
+        "RIO_NUEVO",
+        "SAN_PABLO",
+        "SAN_PEDRITO",
+        "SITIO_NUEVO",
+        "TEBSA",
+        "TENERIFE"
+      ],
+      "niveles_no_incluidas": [],
+      "caudales_incluidas": [
+        "CALAMAR",
+        "MAGANGUE",
+        "BARBOSA",
+        "ARMENIA",
+        "RIO_NUEVO",
+        "LAS_PALOMAS",
+        "LAS_AGUADAS",
+        "EL_BANCO",
+        "PENONCITO",
+        "EL_CONTENTO",
+        "SITIO_NUEVO"
+      ],
+      "caudales_faltantes": [
+        "PUERTO_BERRIO",
+        "PUERTO_SALGAR",
+        "SAN_PABLO"
+      ],
+      "caudales_no_incluidas": [
+        "BARREDERO_FINCA",
+        "NOBLEZA_LA",
+        "PALENQUITO",
+        "PENAS_BLANCAS",
+        "PUENTE_SOGAMOSO",
+        "PUERTO_ARAUJO",
+        "PUERTO_BERRIO",
+        "PUERTO_LIBRE",
+        "PUERTO_SALGAR",
+        "SANTA_ANA",
+        "SANTA_ROSA",
+        "SAN_MIGUEL",
+        "SAN_PABLO",
+        "SAN_ROQUE"
+      ],
+      "comunes": [
+        "ARMENIA",
+        "BARBOSA",
+        "CALAMAR",
+        "EL_BANCO",
+        "EL_CONTENTO",
+        "LAS_AGUADAS",
+        "LAS_PALOMAS",
+        "MAGANGUE",
+        "PENONCITO",
+        "PUERTO_BERRIO",
+        "PUERTO_SALGAR",
+        "RIO_NUEVO",
+        "SAN_PABLO",
+        "SITIO_NUEVO"
+      ],
+      "solo_niveles": [
+        "BARRANCABERMEJA",
+        "COYONGAL",
+        "GAMARRA",
+        "GAMARRA_AUT",
+        "LA_GLORIA",
+        "PLATO",
+        "PUERTO_WILCHES",
+        "SAN_PEDRITO",
+        "TEBSA",
+        "TENERIFE"
+      ],
+      "solo_caudales": [
+        "BARREDERO_FINCA",
+        "NOBLEZA_LA",
+        "PALENQUITO",
+        "PENAS_BLANCAS",
+        "PUENTE_SOGAMOSO",
+        "PUERTO_ARAUJO",
+        "PUERTO_LIBRE",
+        "SANTA_ANA",
+        "SANTA_ROSA",
+        "SAN_MIGUEL",
+        "SAN_ROQUE"
+      ],
+      "base_caudales": [
+        "ARMENIA",
+        "BARBOSA",
+        "BARREDERO_FINCA",
+        "CALAMAR",
+        "EL_BANCO",
+        "EL_CONTENTO",
+        "LAS_AGUADAS",
+        "LAS_PALOMAS",
+        "MAGANGUE",
+        "NOBLEZA_LA",
+        "PALENQUITO",
+        "PENAS_BLANCAS",
+        "PENONCITO",
+        "PUENTE_SOGAMOSO",
+        "PUERTO_ARAUJO",
+        "PUERTO_BERRIO",
+        "PUERTO_LIBRE",
+        "PUERTO_SALGAR",
+        "RIO_NUEVO",
+        "SANTA_ANA",
+        "SANTA_ROSA",
+        "SAN_MIGUEL",
+        "SAN_PABLO",
+        "SAN_ROQUE",
+        "SITIO_NUEVO"
+      ]
+    },
+    "figuras_no_insertadas": {
+      "niveles_estacion": 47,
+      "caudales_estacion": 45,
+      "caudales_estaciones_faltantes": 21
+    }
+  },
+  "pruebas": {
+    "caudales_checks_pass": 6,
+    "caudales_checks_fail": 0,
+    "caudales_checks_info": 2,
+    "homogeneidad_estaciones": 25,
+    "homogeneidad_mk_significativas": 23,
+    "homogeneidad_no_normales": 25,
+    "homogeneidad_tendencias": {
+      "Creciente": 14,
+      "Decreciente": 9,
+      "Sin Tendencia": 2
+    },
+    "niveles_alertas": 1
+  },
+  "scripts": {
+    "caudales": 6,
+    "niveles": 13,
+    "modulos_pipeline": 7
+  },
+  "historicos_figuras": {
+    "Niveles v4.2": 151,
+    "Niveles v4.3": 91,
+    "Curvas H-H v4.2": 30,
+    "Informes/estaciones": 10,
+    "Informes/homogeneidad": 8,
+    "Imagenes/Niveles": 6
+  }
+}
