@@ -299,7 +299,7 @@
     "niveles_alertas": 1
   },
   "scripts": {
-    "caudales": 6,
+    "caudales": 7,
     "niveles": 13,
     "modulos_pipeline": 7
   },

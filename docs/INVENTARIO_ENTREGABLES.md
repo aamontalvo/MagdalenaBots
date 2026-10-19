@@ -69,7 +69,7 @@
 
 | Grupo | Archivos | Ruta |
 |---|---:|---|
-| Caudales v1 | 6 | `backend/scripts/caudales_v1/` |
+| Caudales v1 | 7 | `backend/scripts/caudales_v1/` |
 | Niveles v2.1 | 13 | `backend/scripts/imputation_v2_1/` |
 | Pipeline reutilizable | 7 | `backend/scripts/imputation_v2_1/imputation_pipeline_v2_1/` |
 
@@ -83,6 +83,7 @@
 | `04_imputacion_caudales.py` | L1 + L2. |
 | `05_curva_duracion_caudales.py` | Fig3 (nueva, alineacion con niveles). |
 | `06_metricas_consolidadas.py` | Metricas y JSON. |
+| `07_consolidado_excel.py` | Excel consolidado con hojas de resumen. |
 
 ## 6. Pruebas y auditoria
 

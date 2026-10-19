@@ -231,7 +231,7 @@ El paquete reutilizable `imputation_pipeline_v2_1/` contiene `config`, `loaders`
 
 | Grupo | Cantidad | Ruta |
 |---|---:|---|
-| Caudales v1 | 6 | `backend/scripts/caudales_v1/` |
+| Caudales v1 | 7 | `backend/scripts/caudales_v1/` |
 | Niveles v2.1 | 13 | `backend/scripts/imputation_v2_1/` |
 | Modulos del pipeline | 7 | `backend/scripts/imputation_v2_1/imputation_pipeline_v2_1/` |
 
@@ -243,6 +243,7 @@ Orden de ejecucion de caudales:
 4. `04_imputacion_caudales.py`
 5. `05_curva_duracion_caudales.py`
 6. `06_metricas_consolidadas.py`
+7. `07_consolidado_excel.py`
 
 ---
 
