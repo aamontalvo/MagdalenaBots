@@ -570,7 +570,7 @@ ID: `cdc45f86-e02c-4c19-8e65-5854d6e8a816`
 - `data_source` toma `Original`, `Imputado` o `Faltante`.
 - Los 3 registros vacíos que ya existen en `Niveles` y `Caudales` se dejan; Alex los borrará después.
 - Si el importador rechaza una parte por tamaño, dividirla en dos.
-- La tabla `Figuras` tiene `image_url` con base `{FIGURE_BASE}`. Para que las URLs funcionen, reemplazar `PENDING_HOST` por el dominio público donde se alojen las 251 imágenes. También está `local_path` con la ruta relativa para trazabilidad.
+- `figuras.csv` se genera con `PENDING_HOST`; el paso `10_publish_figures_repo.py` lo actualiza a URLs raw de GitHub en `cartillas_estaciones/figuras_publicas/`. El repo debe ser público para que Softr cargue las imágenes.
 - Las tablas creadas contienen campos genéricos (`official_start`, `records`, etc.) que se dejan vacíos; los valores específicos están en `levels_*` y `caudales_*`.
 """
 (OUT / "README_IMPORT.md").write_text(readme, encoding="utf-8")

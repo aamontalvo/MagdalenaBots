@@ -71,19 +71,18 @@ Softr puede crear los vínculos nativos (`LINKED_RECORD`) después de importar, 
 ## 5. Figuras
 
 - `figuras.csv` tiene 251 filas: 150 de niveles y 101 de caudales.
-- La carpeta pública está en `backend/entregables/softr_import/figures_public/figures/`.
-- El ZIP está en `backend/entregables/softr_import/figures_public.zip` (72,41 MB).
-- `image_url` usa la base `https://PENDING_HOST`. Para activar las URLs:
-  1. Subir `figures_public/figures/` a un dominio público.
-  2. Definir `SOFTR_FIGURE_BASE_URL=https://tudominio.com`.
-  3. Ejecutar:
-     `py backend/scripts/caudales_v1/09_pack_figures_softr.py`
-  4. Reimportar o actualizar `figuras.csv` en Softr.
-
-Opciones de host:
-- Dominio propio / Hostinger.
-- Repo público solo de figuras (requiere autorización).
-- ImgBB / UploadToURL (requiere conectar la app).
+- Las figuras quedaron espejadas en:
+  `cartillas_estaciones/figuras_publicas/figures/`
+- `figuras.csv` apunta a URLs raw de GitHub:
+  `https://raw.githubusercontent.com/aamontalvo/MagdalenaBots/main/cartillas_estaciones/figuras_publicas/figures/...`
+- **El repo está privado.** Esas URLs devuelven 404 hasta que el repositorio sea público.
+- Para que Softr cargue las imágenes:
+  1. Poner `MagdalenaBots` en público temporalmente.
+  2. Importar `figuras.csv` en `Figuras`.
+  3. Verificar que una URL abra en el navegador.
+  4. Si se vuelve a privar, las imágenes de Softr dejan de cargar.
+- Si quieres que las URLs sean permanentes sin exponer todo el repo, crear un repo público solo de figuras o usar ImgBB/UploadToURL.
+- `figures_public.zip` (72,41 MB) queda como respaldo para un host propio.
 
 ## 6. Scripts
 
@@ -93,7 +92,7 @@ Opciones de host:
 ## 7. Lo que falta
 
 1. Importar los CSV en Softr en el orden indicado.
-2. Definir el dominio público de las figuras y regenerar `figuras.csv`.
+2. Poner el repo público temporalmente para que las URLs raw de las figuras funcionen.
 3. Verificar conteos en Softr:
    - `Estaciones` 35.
    - `Resumen_Niveles` 24.
