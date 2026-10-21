@@ -55,6 +55,10 @@ ENV/
 # NOTE: Existing tracked images in v4_2 remain in repo history.
 # New images are NEVER committed. Store them separately or in releases.
 
+# Excepción deliberada: espejo público de figuras para URLs de Softr
+!cartillas_estaciones/figuras_publicas/
+!cartillas_estaciones/figuras_publicas/**
+
 # OS
 .DS_Store
 Thumbs.db
@@ -76,3 +80,7 @@ Data/
 
 # Documents in root (deliverables)
 /INFORMEDETALLADO_*.docx
+
+# Word documents
+docs/*.docx
+docs/~\$*.docx

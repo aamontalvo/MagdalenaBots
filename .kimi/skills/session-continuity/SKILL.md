@@ -600,18 +600,18 @@ cartillas_estaciones/v4_2/SAN_PEDRITO/
 
 ---
 
-## 15. INVESTIGACIÓN PENDIENTE: Alternativas de Imputación ML/Deep Learning
+## 15. INVESTIGACIÓN PENDIENTE: Alternativas de Imputación ML/Deep Learning (Actualizado 08-MAY-2026)
 
 ### Contexto
-missForest (Random Forest) mostró artefactos en CALAMAR-1969. Se requiere evaluar alternativas modernas.
+missForest (Random Forest) mostró artefactos en CALAMAR-1969. Se evaluaron alternativas modernas.
 
-### Opciones a Evaluar
-1. **BRITS** (Bidirectional Recurrent Imputation for Time Series) - RNN
-2. **M-RNN** (Multi-directional RNN)
-3. **SAITS** (Self-Attention-based Imputation for Time Series) - Transformer
-4. **TimesNet** + imputación
-5. **Neural ODEs** para series temporales
-6. **GP-VAE** (Gaussian Process VAE)
+### Opciones Evaluadas (08-MAY-2026)
+
+| Opción | Estado | Resultado |
+|--------|--------|-----------|
+| **SAITS** (Transformer) | ❌ Descartado | Colapsa a valores constantes (std=0 en 15/16 estaciones). Ventana de contexto (90d) < bloques missForest (100-365d). Script completo en `src/analysis/imputation_saits_v4_4*.py` (6 archivos). |
+| **H-H Multivariado** | ⏳ Desarrollo | Script `imputation_multivariate_hh_v4_4.py` listo pero no ejecutado exitosamente. Regresión cuadrática con múltiples donantes ponderadas por R². Requiere optimización de performance. |
+| **Climatología estacional** | ✅ Aprobado | Parche selectivo aplicado a CALAMAR 1969. No es una versión nueva, es corrección dentro de v4.3. |
 
 ### Criterios de Evaluación
 - Preservación de estacionalidad hidrológica
@@ -622,4 +622,82 @@ missForest (Random Forest) mostró artefactos en CALAMAR-1969. Se requiere evalu
 
 ---
 
-**Para continuar**: Ver sección 14 (Resumen de Sesión más reciente) y Tareas Pendientes sección 6.
+## 16. RESUMEN DE SESIÓN 08-MAY-2026
+
+### ✅ Logros de Hoy
+
+#### 1. Evaluación SAITS — DESCARTADO ❌
+- **Instalación**: PyPOTS 1.5 + torch (~452 MB)
+- **Entrenamiento**: 544K parámetros, 50 epochs, MAE 0.19m
+- **Resultado**: std=0 en 15/16 estaciones (colapso a media constante)
+- **Diagnóstico**: Los bloques missForest (100-365 días) exceden la ventana de contexto de SAITS (90 días). Sin datos observados dentro de la ventana, el transformer predice la media.
+- **Scripts generados**: 6 archivos en `src/analysis/imputation_saits_v4_4*.py`
+- **Dataset generado**: `Datos_Imputados_v4_4_SAITS.csv` (descartado, no usar)
+
+#### 2. Desarrollo H-H Multivariado — PENDIENTE DE OPTIMIZACIÓN ⏳
+- **Script**: `src/analysis/imputation_multivariate_hh_v4_4.py`
+- **Concepto**: Regresión cuadrática polinómica con múltiples estaciones donantes simultáneas, ponderadas por R²
+- **Ventaja**: Mantiene base física H-H validada, expande a múltiples donantes
+- **Problema**: Performance lenta (iteración fila-fila en 17,204 registros). Requiere vectorización.
+- **Estado**: Script funcional pero no ejecutado exitosamente por timeout.
+
+#### 3. Parche Climatológico CALAMAR 1969 — APROBADO ✅
+**SALVEDAD CRÍTICA**: Este parche NO es una versión v4.4 separada. Es una **corrección dentro de v4.3**.
+
+| Aspecto | Valor |
+|---------|-------|
+| Estación | CALAMAR |
+| Periodo | 1969-12-01 a 1970-01-30 (61 días) |
+| Problema original | missForest constante: 2.617m, std=0.000 |
+| Causa | Ninguna estación donante tenía datos en ese periodo |
+| Solución | Climatología estacional ajustada (media histórica por mes-día + ajuste a media missForest) |
+| Resultado | mean=2.624m, std=0.999m, range=[0.930, 3.795]m |
+| Hard rule | Todos los valores dentro del rango histórico [0.930, 9.300]m |
+| Dataset final | `Datos_Imputados_v4_4_ClimatologyPatch.csv` (nombre temporal; **debe integrarse como v4.3**) |
+
+**Artefacto SITIO_NUEVO 1988 — NO CORREGIDO**:
+- 36 días con std=0.045 (casi plano pero no constante)
+- Donantes disponibles con R² < 0.75 (EL_BANCO 0.528, PENONCITO 0.460, ARMENIA 0.352)
+- Sitio Nuevo es estación descartada por inhomogeneidad
+- Decisión: Dejar missForest, documentar en informe
+
+#### 4. Cartillas CALAMAR Regeneradas (v4.3 con parche)
+- **Ubicación**: `cartillas_estaciones/v4_4_CALAMAR/` (5 figuras)
+- **Script**: `cartillas_estaciones/generar_cartillas_v4_4_calamar.py`
+- **Dataset usado**: `Datos_Imputados_v4_4_ClimatologyPatch.csv`
+- Fig1 muestra variabilidad estacional en 1969-1970 (sin línea plana)
+
+#### 5. Verificación de Integridad v4.3+Parche
+- Check #1: Inmutabilidad originales — 0 diferencias ✅
+- Check #2: Solo 61 registros modificados (CALAMAR) ✅
+- Check #3: 0 nuevas violaciones de hard rule (95 preexistentes) ✅
+- Check #4: Bloque CALAMAR con método L4_Climatologia_Estacional ✅
+
+#### 6. Documentos Generados
+| Documento | Ruta | Propósito |
+|-----------|------|-----------|
+| REDACTION_IMPUTACION_v4_4_FINAL.md | `docs/` | Texto para informe técnico (incluye sección L4) |
+| REPORTE_VERIFICACION_v4_4.md | `docs/` | Verificación de calidad del parche |
+| GUIA_ENTREGA_JEFE_v4_4.md | `docs/` | Checklist y respuestas para presentación |
+| GUIA_NAVEGACION_COMPLETA_v4_4.md | `docs/` | Mapa completo de códigos, datasets, cartillas |
+| detalle_parche_calamar_v4_4.csv | `backend/.../imputation/` | Auditoría día a día del parche |
+
+#### 7. Git Commits (08-MAY-2026)
+```
+fb78a08 v4.4: Parche climatologico CALAMAR 1969-1970 artefacto missForest
+800740f v4.4: Guia de entrega y cartillas CALAMAR regeneradas
+7a6b5d5 docs: Guia de navegacion completa v4.4 unificada
+```
+**NOTA**: Los commits usan "v4.4" en mensaje por el nombre temporal del dataset. **El parche debe integrarse como parte de v4.3**, no como versión separada.
+
+### 🔴 TAREA CRÍTICA PARA MAÑANA
+
+**Integrar el parche de CALAMAR dentro de v4.3**:
+1. Renombrar/actualizar `Datos_Imputados_v4_4_ClimatologyPatch.csv` → integrar en el flujo de v4.3
+2. Actualizar documentos: cambiar referencias "v4.4" a "v4.3 con parche climatológico"
+3. Regenerar cartillas de CALAMAR con el dataset v4.3 final (no crear carpeta v4_4)
+4. El método del parche puede llamarse `L3_missForest_Climatologia` o similar dentro del sistema v4.3
+
+---
+
+**Para continuar**: Ver sección 16 (Resumen de Sesión más reciente) y Tareas Pendientes sección 6.
